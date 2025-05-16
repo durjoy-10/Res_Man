@@ -1,5 +1,5 @@
 <?php
-require 'db_connection.php';
+require_once 'db_connection.php';
 
 header('Content-Type: application/json');
 
@@ -8,62 +8,25 @@ if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
     exit;
 }
 
+// Get the ID from the query string
 $id = $_GET['id'] ?? null;
 
 if (!$id) {
-    echo json_encode(['success' => false, 'message' => 'Missing restaurant ID']);
+    echo json_encode(['success' => false, 'message' => 'No ID provided']);
     exit;
 }
 
 try {
-    // First delete related records to maintain referential integrity
-    $pdo->beginTransaction();
-    
-    // Delete offers
-    $stmt = $pdo->prepare("DELETE FROM offers WHERE restaurant_id = ?");
-    $stmt->execute([$id]);
-    
-    // Delete menu items
-    $stmt = $pdo->prepare("DELETE FROM menu_items WHERE restaurant_id = ?");
-    $stmt->execute([$id]);
-    
-    // Delete the restaurant
+    // The ON DELETE CASCADE in the foreign keys will handle related records
     $stmt = $pdo->prepare("DELETE FROM restaurants WHERE id = ?");
     $stmt->execute([$id]);
     
-    $pdo->commit();
-    
-    // Delete the restaurant directory
-    $restaurant_dir = "Restaurant" . $id;
-    if (file_exists($restaurant_dir)) {
-        deleteDirectory($restaurant_dir);
+    if ($stmt->rowCount() > 0) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Restaurant not found']);
     }
-    
-    echo json_encode(['success' => true]);
 } catch (PDOException $e) {
-    $pdo->rollBack();
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
-}
-
-function deleteDirectory($dir) {
-    if (!file_exists($dir)) {
-        return true;
-    }
-
-    if (!is_dir($dir)) {
-        return unlink($dir);
-    }
-
-    foreach (scandir($dir) as $item) {
-        if ($item == '.' || $item == '..') {
-            continue;
-        }
-
-        if (!deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) {
-            return false;
-        }
-    }
-
-    return rmdir($dir);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>

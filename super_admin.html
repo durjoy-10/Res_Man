@@ -4,8 +4,144 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Admin Panel</title>
-    <link rel="stylesheet" href="static/css/admin.css">
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        /* Add all your existing styles here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #f1f1f1;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab.active {
+            background: #4CAF50;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #2196F3;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+        .category-container {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .menu-item-group {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #dee2e6;
+        }
+        .item-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .category-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .restaurant-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background: white;
+        }
+        .restaurant-card img {
+            max-width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .no-image {
+            background: #eee;
+            padding: 20px;
+            text-align: center;
+            border-radius: 4px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .restaurant-header {
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 <body>
     <div class="admin-container">
@@ -53,37 +189,18 @@
                     <textarea id="address" name="address" rows="3" required></textarea>
                 </div>
                 
-                <h3><i class="fas fa-utensils"></i> Menu Items</h3>
-                <div id="menu-items-container">
-                    <div class="menu-item-group">
-                        <div class="form-group">
-                            <label><i class="fas fa-tags"></i> Category:</label>
-                            <input type="text" name="menu_category[]" required>
-                        </div>
-                        <div class="form-group">
-                            <label><i class="fas fa-hamburger"></i> Item Name:</label>
-                            <input type="text" name="menu_name[]" required>
-                        </div>
-                        <div class="form-group">
-                            <label><i class="fas fa-align-left"></i> Description:</label>
-                            <textarea name="menu_description[]" rows="2"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label><i class="fas fa-tag"></i> Price:</label>
-                            <input type="number" step="0.01" name="menu_price[]" required>
-                        </div>
-                        <div class="form-group">
-                            <label><i class="fas fa-image"></i> Image:</label>
-                            <input type="file" name="menu_image[]">
-                        </div>
-                        <button type="button" class="remove-item" onclick="removeMenuItem(this)">
-                            <i class="fas fa-trash"></i> Remove
-                        </button>
-                    </div>
+                <div class="form-group">
+                    <label for="restaurant-image"><i class="fas fa-image"></i> Restaurant Image:</label>
+                    <input type="file" id="restaurant-image" name="restaurant_image" accept="image/*">
                 </div>
                 
-                <button type="button" class="add-menu-item" onclick="addMenuItem()">
-                    <i class="fas fa-plus"></i> Add Menu Item
+                <h3><i class="fas fa-utensils"></i> Menu Categories & Items</h3>
+                <div id="categories-container">
+                    <!-- Categories will be added here -->
+                </div>
+                
+                <button type="button" class="btn btn-secondary" onclick="addCategory()">
+                    <i class="fas fa-plus"></i> Add Category
                 </button>
                 
                 <h3><i class="fas fa-percentage"></i> Special Offers</h3>
@@ -91,25 +208,27 @@
                     <div class="offer-group">
                         <div class="form-group">
                             <label><i class="fas fa-align-left"></i> Offer Description:</label>
-                            <textarea name="offer_description[]" rows="2" required></textarea>
+                            <textarea name="offer_description[]" rows="2"></textarea>
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-calendar-check"></i> Valid Until:</label>
                             <input type="date" name="offer_valid_until[]">
                         </div>
-                        <button type="button" class="remove-offer" onclick="removeOffer(this)">
+                        <button type="button" class="btn btn-danger" onclick="removeOffer(this)">
                             <i class="fas fa-trash"></i> Remove
                         </button>
                     </div>
                 </div>
                 
-                <button type="button" class="add-offer" onclick="addOffer()">
+                <button type="button" class="btn btn-secondary" onclick="addOffer()">
                     <i class="fas fa-plus"></i> Add Offer
                 </button>
                 
-                <button type="submit" class="create-btn">
-                    <i class="fas fa-save"></i> Create Restaurant
-                </button>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Create Restaurant
+                    </button>
+                </div>
             </form>
         </div>
         
@@ -122,6 +241,10 @@
     </div>
 
     <script>
+        // Category counter for unique IDs
+        let categoryCounter = 0;
+        let itemCounter = 0;
+        
         function switchTab(tabName) {
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
@@ -134,40 +257,82 @@
             document.getElementById(`${tabName}-tab`).classList.add('active');
         }
         
-        function addMenuItem() {
-            const container = document.getElementById('menu-items-container');
+        function addCategory() {
+            const categoryId = `category-${categoryCounter++}`;
+            const container = document.getElementById('categories-container');
+            const newCategory = document.createElement('div');
+            newCategory.className = 'category-container';
+            newCategory.id = categoryId;
+            newCategory.innerHTML = `
+                <div class="category-header">
+                    <h4>New Category</h4>
+                    <button type="button" class="btn btn-danger" onclick="removeCategory('${categoryId}')">
+                        <i class="fas fa-trash"></i> Remove Category
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-tags"></i> Category Name:</label>
+                    <input type="text" name="category_name[]" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-align-left"></i> Category Description:</label>
+                    <textarea name="category_description[]" rows="2"></textarea>
+                </div>
+                <h5>Menu Items</h5>
+                <div class="menu-items-container" id="menu-items-${categoryId}">
+                    <!-- Items will be added here -->
+                </div>
+                <div class="category-actions">
+                    <button type="button" class="btn btn-secondary" onclick="addMenuItem('${categoryId}')">
+                        <i class="fas fa-plus"></i> Add Menu Item
+                    </button>
+                </div>
+            `;
+            container.appendChild(newCategory);
+            
+            // Add first item to the category
+            addMenuItem(categoryId);
+        }
+        
+        function removeCategory(categoryId) {
+            if (confirm('Are you sure you want to remove this category and all its items?')) {
+                document.getElementById(categoryId).remove();
+            }
+        }
+        
+        function addMenuItem(categoryId) {
+            const itemId = `item-${itemCounter++}`;
+            const container = document.getElementById(`menu-items-${categoryId}`);
             const newItem = document.createElement('div');
             newItem.className = 'menu-item-group';
             newItem.innerHTML = `
                 <div class="form-group">
-                    <label><i class="fas fa-tags"></i> Category:</label>
-                    <input type="text" name="menu_category[]" required>
-                </div>
-                <div class="form-group">
                     <label><i class="fas fa-hamburger"></i> Item Name:</label>
-                    <input type="text" name="menu_name[]" required>
+                    <input type="text" name="item_name[${categoryCounter-1}][]" required>
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-align-left"></i> Description:</label>
-                    <textarea name="menu_description[]" rows="2"></textarea>
+                    <textarea name="item_description[${categoryCounter-1}][]" rows="2"></textarea>
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-tag"></i> Price:</label>
-                    <input type="number" step="0.01" name="menu_price[]" required>
+                    <input type="number" step="0.01" name="item_price[${categoryCounter-1}][]" required>
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-image"></i> Image:</label>
-                    <input type="file" name="menu_image[]">
+                    <input type="file" name="item_image[${categoryCounter-1}][]" accept="image/*">
                 </div>
-                <button type="button" class="remove-item" onclick="removeMenuItem(this)">
-                    <i class="fas fa-trash"></i> Remove
-                </button>
+                <div class="item-actions">
+                    <button type="button" class="btn btn-danger" onclick="removeMenuItem(this)">
+                        <i class="fas fa-trash"></i> Remove Item
+                    </button>
+                </div>
             `;
             container.appendChild(newItem);
         }
         
         function removeMenuItem(button) {
-            button.parentElement.remove();
+            button.closest('.menu-item-group').remove();
         }
         
         function addOffer() {
@@ -177,13 +342,13 @@
             newOffer.innerHTML = `
                 <div class="form-group">
                     <label><i class="fas fa-align-left"></i> Offer Description:</label>
-                    <textarea name="offer_description[]" rows="2" required></textarea>
+                    <textarea name="offer_description[]" rows="2"></textarea>
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-calendar-check"></i> Valid Until:</label>
                     <input type="date" name="offer_valid_until[]">
                 </div>
-                <button type="button" class="remove-offer" onclick="removeOffer(this)">
+                <button type="button" class="btn btn-danger" onclick="removeOffer(this)">
                     <i class="fas fa-trash"></i> Remove
                 </button>
             `;
@@ -191,7 +356,7 @@
         }
         
         function removeOffer(button) {
-            button.parentElement.remove();
+            button.closest('.offer-group').remove();
         }
         
         // Load existing restaurants
@@ -211,32 +376,37 @@
                         const card = document.createElement('div');
                         card.className = 'restaurant-card';
                         card.innerHTML = `
-                            <h3><i class="fas fa-hotel"></i> ${restaurant.name}</h3>
-                            <p><i class="fas fa-align-left"></i> ${restaurant.description.substring(0, 100)}...</p>
+                            <div class="restaurant-header">
+                                ${restaurant.image_path ? 
+                                    `<img src="${restaurant.image_path}" alt="${restaurant.name}">` : 
+                                    '<div class="no-image">No Image</div>'}
+                                <h3><i class="fas fa-hotel"></i> ${restaurant.name}</h3>
+                            </div>
+                            <p><i class="fas fa-align-left"></i> ${restaurant.description}</p>
                             <p><i class="fas fa-user-tie"></i> ${restaurant.owner_name}</p>
+                            <p><i class="fas fa-envelope"></i> ${restaurant.owner_email}</p>
                             <p><i class="fas fa-phone"></i> ${restaurant.phone}</p>
-                            <button onclick="viewRestaurant(${restaurant.id})">
-                                <i class="fas fa-eye"></i> View
-                            </button>
-                            <button onclick="editRestaurant(${restaurant.id})">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button onclick="deleteRestaurant(${restaurant.id})">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
+                            <p><i class="fas fa-map-marker-alt"></i> ${restaurant.address}</p>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="viewRestaurant(${restaurant.id})">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteRestaurant(${restaurant.id})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
                         `;
                         container.appendChild(card);
                     });
+                })
+                .catch(error => {
+                    console.error('Error loading restaurants:', error);
+                    alert('Failed to load restaurants. Please check console for details.');
                 });
         }
         
         function viewRestaurant(id) {
-            window.open(`Restaurant${id}/home1.html`, '_blank');
-        }
-        
-        function editRestaurant(id) {
-            alert('Edit functionality for restaurant ID: ' + id);
-            // In a real application, you would implement the edit functionality
+            window.location.href = `index.php?restaurant_id=${id}`;
         }
         
         function deleteRestaurant(id) {
@@ -250,13 +420,15 @@
                         } else {
                             alert('Error: ' + data.message);
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting restaurant:', error);
+                        alert('Failed to delete restaurant. Please check console for details.');
                     });
             }
         }
         
         // Form submission
-        
-        // Update the form submission handler
         document.getElementById('restaurant-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -266,8 +438,10 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
             submitBtn.disabled = true;
             
+            // Prepare FormData
             const formData = new FormData(this);
             
+            // Send the request
             fetch('create_restaurant.php', {
                 method: 'POST',
                 body: formData
@@ -280,7 +454,13 @@
             })
             .then(data => {
                 if (data.success) {
-                    alert(`Restaurant created successfully! ID: ${data.restaurant_id}`);
+                    const message = `Restaurant created successfully! ID: ${data.restaurant_id}
+                    Owner credentials:
+                    Email: ${data.owner_email}
+                    Password: ${data.owner_password}
+                    (Please change this password immediately)`;
+                    
+                    alert(message);
                     this.reset();
                     loadRestaurants();
                     switchTab('manage');
@@ -299,7 +479,10 @@
         });
         
         // Load restaurants on page load
-        document.addEventListener('DOMContentLoaded', loadRestaurants);
+        document.addEventListener('DOMContentLoaded', function() {
+            addCategory(); // Add one category by default
+            loadRestaurants();
+        });
     </script>
 </body>
 </html>

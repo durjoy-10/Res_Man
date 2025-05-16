@@ -7,6 +7,5 @@ $_SESSION = array();
 // Destroy the session
 session_destroy();
 
-// Return success response
-echo json_encode(['success' => true]);
+header("Location: login.html");
 ?>

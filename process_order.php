@@ -1,5 +1,6 @@
 <?php
 require 'db_connection.php';
+session_start();
 
 header('Content-Type: application/json');
 
@@ -7,6 +8,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);
     exit;
 }
+
+// Get user ID from session if available
+$user_id = $_SESSION['user_id'] ?? null;
 
 $restaurant_id = $_POST['restaurant_id'] ?? null;
 $name = $_POST['name'] ?? '';
@@ -26,14 +30,14 @@ try {
     // Create the order
     $stmt = $pdo->prepare("
         INSERT INTO orders 
-        (restaurant_id, customer_name, customer_email, customer_phone, delivery_address, special_instructions) 
-        VALUES (?, ?, ?, ?, ?, ?)
+        (user_id, restaurant_id, customer_name, customer_email, customer_phone, delivery_address, special_instructions, status) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
     ");
-    $stmt->execute([$restaurant_id, $name, $email, $phone, $address, $instructions]);
+    $stmt->execute([$user_id, $restaurant_id, $name, $email, $phone, $address, $instructions]);
     $order_id = $pdo->lastInsertId();
     
-    // Add order items (in a real app, these would come from the cart)
-    // This is a simplified version - you would need to modify this based on your actual order process
+    // In a real application, you would add the actual items from the cart
+    // For this example, we'll add one sample item
     $stmt = $pdo->prepare("
         INSERT INTO order_items (order_id, menu_item_id, quantity, price)
         SELECT ?, id, 1, price FROM menu_items WHERE restaurant_id = ? LIMIT 1
