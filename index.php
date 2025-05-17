@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Management System</title>
     <link rel="stylesheet" href="static/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         .restaurant-details {
             background: white;
@@ -66,7 +67,6 @@
             margin-top: 30px;
         }
         
-        /* New styles for image handling */
         .default-image {
             display: flex;
             align-items: center;
@@ -107,7 +107,6 @@
             color: #999;
         }
         
-        /* Existing styles remain unchanged */
         .order-form h2 {
             margin-bottom: 20px;
         }
@@ -150,6 +149,120 @@
         .submit-btn:hover {
             background: #c0392b;
         }
+        
+        .search-container {
+            padding: 20px;
+            background: white;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .search-container input {
+            padding: 10px;
+            width: 70%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .search-container button {
+            padding: 10px 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .restaurants-container {
+            margin: 20px 0;
+        }
+        
+        .restaurants-horizontal-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding: 20px 0;
+        }
+        
+        .restaurant-card-horizontal {
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .restaurant-card-horizontal h3 {
+            padding: 15px;
+            margin: 0;
+        }
+        
+        .restaurant-info {
+            padding: 0 15px 15px;
+        }
+        
+        .restaurant-info p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+        
+        .view-btn {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            background: #e74c3c;
+            color: white;
+            text-decoration: none;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .search-results {
+            margin: 20px 0;
+        }
+        
+        .food-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .food-item {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .food-image img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .food-details {
+            padding: 15px;
+        }
+        
+        .food-details h3 {
+            margin: 0 0 10px;
+        }
+        
+        .food-price {
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 10px 0;
+        }
+        
+        .order-btn {
+            display: inline-block;
+            padding: 8px 15px;
+            background: #e74c3c;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -167,39 +280,42 @@
     <?php
     require 'db_connection.php';
     
-    // Enhanced image handling function
     function getImageUrl($path, $type = 'restaurant') {
-        // Default image paths
+        $baseDir = '/opt/lampp/htdocs/restaurant_management/';
+        $webRoot = '/restaurant_management/';
+        
         $defaults = [
-            'restaurant' => '/uploads/restaurants/estaurant.jpg',
-            'food' => '/uploads/menu_items/food.jpg'
+            'restaurant' => $webRoot . 'static/media/default-restaurant.jpeg',
+            'food' => $webRoot . 'static/media/default-food.jpeg'
         ];
         
-        // If no path provided or path is NULL, return default
         if (empty($path)) {
             return $defaults[$type];
         }
         
-        // If it's already a full URL, return as-is
         if (strpos($path, 'http') === 0 || strpos($path, 'https') === 0) {
             return $path;
         }
         
-        // Check if file exists
-        $local_path = ltrim($path, '/');
-        if (file_exists($local_path)) {
-            return '/' . $local_path;
+        if (strpos($path, $webRoot) === 0) {
+            return $path;
         }
         
-        // Fallback to default image
+        if (strpos($path, $baseDir) === 0) {
+            return $webRoot . str_replace($baseDir, '', $path);
+        }
+        
+        $local_path = $baseDir . ltrim($path, '/');
+        if (file_exists($local_path)) {
+            return $webRoot . ltrim($path, '/');
+        }
+        
         return $defaults[$type];
     }
 
-    // Check if viewing a specific restaurant
     if (isset($_GET['restaurant_id'])) {
         $restaurant_id = $_GET['restaurant_id'];
         
-        // Get restaurant details
         $stmt = $pdo->prepare("SELECT * FROM restaurants WHERE id = ?");
         $stmt->execute([$restaurant_id]);
         $restaurant = $stmt->fetch();
@@ -213,14 +329,13 @@
             if (strpos($restaurantImageUrl, 'default-restaurant.jpg') !== false) {
                 echo '<div class="restaurant-default-image default-image"><i class="fas fa-store"></i></div>';
             } else {
-                echo '<img src="' . htmlspecialchars($restaurantImageUrl) . '" alt="' . htmlspecialchars($restaurant['name']) . '">';
+                echo '<img src="' . htmlspecialchars($restaurantImageUrl) . '" alt="' . htmlspecialchars($restaurant['name']) . '" onerror="this.onerror=null;this.src=\'' . getImageUrl(null, 'restaurant') . '\'">';
             }
             
             echo '<p>' . htmlspecialchars($restaurant['description']) . '</p>';
             echo '<p><i class="fas fa-phone"></i> ' . htmlspecialchars($restaurant['phone']) . '</p>';
             echo '<p><i class="fas fa-map-marker-alt"></i> ' . htmlspecialchars($restaurant['address']) . '</p>';
             
-            // Get menu categories
             $stmt = $pdo->prepare("SELECT * FROM menu_categories WHERE restaurant_id = ?");
             $stmt->execute([$restaurant_id]);
             $categories = $stmt->fetchAll();
@@ -236,7 +351,6 @@
                         echo '<p>' . htmlspecialchars($category['description']) . '</p>';
                     }
                     
-                    // Get menu items
                     $stmt = $pdo->prepare("SELECT * FROM menu_items WHERE category_id = ?");
                     $stmt->execute([$category['id']]);
                     $items = $stmt->fetchAll();
@@ -249,7 +363,7 @@
                             if (strpos($itemImageUrl, 'default-food.jpg') !== false) {
                                 echo '<div class="menu-item-default-image default-image"><i class="fas fa-utensils"></i></div>';
                             } else {
-                                echo '<img src="' . htmlspecialchars($itemImageUrl) . '" alt="' . htmlspecialchars($item['name']) . '" class="menu-item-image">';
+                                echo '<img src="' . htmlspecialchars($itemImageUrl) . '" alt="' . htmlspecialchars($item['name']) . '" class="menu-item-image" onerror="this.onerror=null;this.src=\'' . getImageUrl(null, 'food') . '\'">';
                             }
                             
                             echo '<div class="menu-item-details">';
@@ -257,19 +371,18 @@
                             echo '<p>' . htmlspecialchars($item['description']) . '</p>';
                             echo '<p class="menu-item-price">$' . number_format($item['price'], 2) . '</p>';
                             echo '</div>';
-                            echo '</div>'; // menu-item
+                            echo '</div>';
                         }
                     } else {
                         echo '<p>No items in this category yet.</p>';
                     }
                     
-                    echo '</div>'; // menu-category
+                    echo '</div>';
                 }
             } else {
                 echo '<p>No menu categories available yet.</p>';
             }
             
-            // Order form
             echo '<div class="order-form">';
             echo '<h2>Place Your Order</h2>';
             echo '<form id="order-form" action="process_order.php" method="POST">';
@@ -306,15 +419,14 @@
             
             echo '<button type="submit" class="submit-btn">Place Order</button>';
             echo '</form>';
-            echo '</div>'; // order-form
+            echo '</div>';
             
-            echo '</div>'; // restaurant-details
-            echo '</div>'; // container
+            echo '</div>';
+            echo '</div>';
         } else {
             echo '<div class="container"><p>Restaurant not found.</p></div>';
         }
     } else {
-        // Show all restaurants
         ?>
         <div class="search-container">
             <input type="text" id="search" placeholder="Search for food or restaurant...">
@@ -335,12 +447,14 @@
                     $image_url = getImageUrl($restaurant['image_path'], 'restaurant');
                 ?>
                 <div class="restaurant-card-horizontal">
-                    <?php if (strpos($image_url, 'default-restaurant.jpg') !== false): ?>
+                    <?php if (empty($restaurant['image_path']) || strpos($image_url, 'default-restaurant.jpg') !== false): ?>
                         <div class="restaurant-card-default-image default-image">
                             <i class="fas fa-store"></i>
                         </div>
                     <?php else: ?>
-                        <img src="<?= htmlspecialchars($image_url) ?>" alt="<?= htmlspecialchars($restaurant['name']) ?>">
+                        <img src="<?= htmlspecialchars($image_url) ?>" 
+                             alt="<?= htmlspecialchars($restaurant['name']) ?>"
+                             onerror="this.onerror=null;this.src='<?= getImageUrl(null, 'restaurant') ?>'">
                     <?php endif; ?>
                     <h3><?= htmlspecialchars($restaurant['name']) ?></h3>
                     <div class="restaurant-info">
@@ -355,9 +469,7 @@
         </div>
         
         <script>
-            // Enhanced image error handling
             document.addEventListener('DOMContentLoaded', function() {
-                // Replace broken images with default icons
                 document.querySelectorAll('img').forEach(img => {
                     img.onerror = function() {
                         const container = document.createElement('div');
@@ -373,7 +485,6 @@
                 });
             });
 
-            // Search function
             function searchFood() {
                 const query = document.getElementById('search').value.trim();
                 if (query === '') {
@@ -429,14 +540,12 @@
                     });
             }
             
-            // Handle Enter key in search
             document.getElementById('search').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     searchFood();
                 }
             });
             
-            // Order form submission
             if (document.getElementById('order-form')) {
                 document.getElementById('order-form').addEventListener('submit', function(e) {
                     e.preventDefault();

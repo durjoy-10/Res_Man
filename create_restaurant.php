@@ -8,7 +8,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Generate a random password for the owner
 function generateRandomPassword($length = 12) {
     $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
     $password = '';
@@ -18,60 +17,59 @@ function generateRandomPassword($length = 12) {
     return $password;
 }
 
-// Improved file upload handler with error checking
 function handleFileUpload($file, $uploadDir, $prefix) {
-    // Check if upload directory exists and is writable
-    if (!file_exists($uploadDir)) {
-        if (!mkdir($uploadDir, 0755, true)) {
-            throw new Exception("Failed to create upload directory: $uploadDir");
+    // Define base directory
+    $baseDir = '/opt/lampp/htdocs/restaurant_management/';
+    $fullUploadDir = $baseDir . ltrim($uploadDir, '/');
+    
+    // Create directory if needed
+    if (!file_exists($fullUploadDir)) {
+        if (!mkdir($fullUploadDir, 0755, true)) {
+            throw new Exception("Failed to create upload directory: $fullUploadDir");
         }
-    } elseif (!is_writable($uploadDir)) {
-        throw new Exception("Upload directory is not writable: $uploadDir");
     }
     
-    // Check for upload errors
+    // Validate file
     if ($file['error'] !== UPLOAD_ERR_OK) {
         throw new Exception("File upload error: " . $file['error']);
     }
     
-    // Validate file type (images only)
     $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!in_array($file['type'], $allowedTypes)) {
         throw new Exception("Invalid file type. Only images are allowed.");
     }
     
-    // Generate unique filename
+    // Generate filename and move file
     $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = $prefix . uniqid() . '.' . strtolower($extension);
-    $destination = rtrim($uploadDir, '/') . '/' . $filename;
+    $destination = $fullUploadDir . $filename;
     
-    // Move uploaded file
     if (!move_uploaded_file($file['tmp_name'], $destination)) {
         throw new Exception("Failed to move uploaded file.");
     }
     
-    // Return relative path (from the root of your application)
-    return $destination;
+    // Return relative path
+    return $uploadDir . $filename;
 }
 
 try {
     $pdo->beginTransaction();
 
-    // Handle file upload for restaurant image
+    // Handle restaurant image
     $restaurantImagePath = null;
     if (!empty($_FILES['restaurant_image']['name'])) {
         $restaurantImagePath = handleFileUpload(
             $_FILES['restaurant_image'], 
-            __DIR__ . '/uploads/restaurants/', 
+            'uploads/restaurants/', 
             'restaurant_'
         );
     }
 
-    // Create restaurant owner account
+    // Create owner account
     $ownerPassword = generateRandomPassword();
     $hashedPassword = password_hash($ownerPassword, PASSWORD_BCRYPT);
 
-    // Insert restaurant data
+    // Insert restaurant
     $stmt = $pdo->prepare("INSERT INTO restaurants 
         (name, description, owner_name, owner_email, owner_password, phone, address, image_path) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
@@ -105,10 +103,10 @@ try {
             
             $categoryId = $pdo->lastInsertId();
 
-            // Handle menu items for this category
+            // Handle menu items
             if (isset($_POST['item_name'][$index])) {
                 foreach ($_POST['item_name'][$index] as $itemIndex => $itemName) {
-                    // Handle file upload for item image
+                    // Handle item image
                     $itemImagePath = null;
                     if (!empty($_FILES['item_image']['name'][$index][$itemIndex])) {
                         $file = [
@@ -121,7 +119,7 @@ try {
                         
                         $itemImagePath = handleFileUpload(
                             $file,
-                            __DIR__ . '/uploads/menu_items/',
+                            'uploads/menu_items/',
                             'item_'
                         );
                     }
@@ -170,11 +168,22 @@ try {
         'restaurant_id' => $restaurantId,
         'owner_email' => $_POST['owner_email'],
         'owner_password' => $ownerPassword,
-        'image_path' => $restaurantImagePath // For debugging
+        'image_url' => $restaurantImagePath ? convertPathToUrl($restaurantImagePath) : null
     ]);
 } catch (Exception $e) {
     $pdo->rollBack();
     error_log("Error in create_restaurant.php: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+}
+
+function convertPathToUrl($path) {
+    $basePath = '/opt/lampp/htdocs/restaurant_management/';
+    $relativePath = str_replace($basePath, '', $path);
+    
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+    $host = $_SERVER['HTTP_HOST'];
+    $baseUrl = dirname($_SERVER['SCRIPT_NAME']);
+    
+    return "{$protocol}://{$host}{$baseUrl}/{$relativePath}";
 }
 ?>

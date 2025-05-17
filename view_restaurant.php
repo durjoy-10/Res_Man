@@ -11,7 +11,7 @@ if (!$restaurantId) {
 }
 
 try {
-    // Get restaurant basic info
+    // Get restaurant info
     $stmt = $pdo->prepare("SELECT * FROM restaurants WHERE id = ?");
     $stmt->execute([$restaurantId]);
     $restaurant = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -21,9 +21,9 @@ try {
         exit;
     }
     
-    // Convert relative image paths to absolute URLs
+    // Convert image path to URL
     if (!empty($restaurant['image_path'])) {
-        $restaurant['image_url'] = getAbsoluteUrl($restaurant['image_path']);
+        $restaurant['image_url'] = convertPathToUrl($restaurant['image_path']);
     } else {
         $restaurant['image_url'] = null;
     }
@@ -48,12 +48,12 @@ try {
     $stmt->execute([$restaurantId]);
     $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Convert JSON strings to arrays and process image paths
+    // Process items and image paths
     foreach ($categories as &$category) {
         $items = json_decode($category['items'], true) ?: [];
         foreach ($items as &$item) {
             if (!empty($item['image_path'])) {
-                $item['image_url'] = getAbsoluteUrl($item['image_path']);
+                $item['image_url'] = convertPathToUrl($item['image_path']);
             } else {
                 $item['image_url'] = null;
             }
@@ -74,23 +74,14 @@ try {
     echo json_encode(['error' => $e->getMessage()]);
 }
 
-/**
- * Convert relative file path to absolute URL
- */
-function getAbsoluteUrl($relativePath) {
-    // Determine the protocol (http or https)
+function convertPathToUrl($path) {
+    $basePath = '/opt/lampp/htdocs/restaurant_management/';
+    $relativePath = str_replace($basePath, '', $path);
+    
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-    
-    // Get the server host
     $host = $_SERVER['HTTP_HOST'];
+    $baseUrl = dirname($_SERVER['SCRIPT_NAME']);
     
-    // Get the base path (if your application is in a subdirectory)
-    $basePath = dirname($_SERVER['SCRIPT_NAME']);
-    
-    // Remove any leading slashes from the relative path
-    $relativePath = ltrim($relativePath, '/');
-    
-    // Construct the full URL
-    return "{$protocol}://{$host}{$basePath}/{$relativePath}";
+    return "{$protocol}://{$host}{$baseUrl}/{$relativePath}";
 }
 ?>
