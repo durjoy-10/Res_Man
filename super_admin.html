@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Admin Panel</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         /* Add all your existing styles here */
         body {
@@ -358,6 +357,7 @@
         function removeOffer(button) {
             button.closest('.offer-group').remove();
         }
+        
         // Load existing restaurants
         function loadRestaurants() {
             fetch('get_restaurant.php')
@@ -374,21 +374,11 @@
                     data.forEach(restaurant => {
                         const card = document.createElement('div');
                         card.className = 'restaurant-card';
-                        
-                        // Build image HTML with error handling
-                        let imageHtml;
-                        if (restaurant.image_url) {
-                            imageHtml = `
-                                <img src="${restaurant.image_url}" 
-                                     alt="${restaurant.name}"
-                                     onerror="this.onerror=null;this.parentNode.innerHTML='<div class=\\'no-image\\'>Image not available</div>'">`;
-                        } else {
-                            imageHtml = '<div class="no-image">No Image</div>';
-                        }
-                        
                         card.innerHTML = `
                             <div class="restaurant-header">
-                                ${imageHtml}
+                                ${restaurant.image_path ? 
+                                    `<img src="${restaurant.image_path}" alt="${restaurant.name}">` : 
+                                    '<div class="no-image">No Image</div>'}
                                 <h3><i class="fas fa-hotel"></i> ${restaurant.name}</h3>
                             </div>
                             <p><i class="fas fa-align-left"></i> ${restaurant.description}</p>

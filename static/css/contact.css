@@ -1,0 +1,219 @@
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    margin: 0;
+    padding: 0 1rem;
+    text-align: center;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem 0;
+    background-color: #34495e;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    margin: 0 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+nav a:hover {
+    background-color: #2c3e50;
+}
+
+
+/* Contact Page Specific Styles */
+.container {
+    max-width: 900px;
+    margin: 3rem auto;
+    padding: 3rem;
+    background: white;
+    border-radius: 25px;
+    box-shadow: 0 15px 35px rgba(255, 107, 107, 0.15);
+    position: relative;
+    overflow: hidden;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    background-image: linear-gradient(white, white), 
+                      linear-gradient(135deg, #ff6b6b, #ffd166, #06d6a0);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+}
+
+.container::before {
+    content: "";
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255,214,102,0.2) 0%, rgba(255,214,102,0) 70%);
+    z-index: -1;
+}
+
+.container::after {
+    content: "";
+    position: absolute;
+    bottom: -70px;
+    left: -70px;
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(239,71,111,0.1) 0%, rgba(239,71,111,0) 70%);
+    z-index: -1;
+}
+
+h2 {
+    color: #ef476f;
+    font-size: 2.8rem;
+    margin-bottom: 1.8rem;
+    position: relative;
+    display: inline-block;
+    font-family: 'Dancing Script', cursive;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(90deg, #ef476f, #ffd166);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    padding-bottom: 10px;
+}
+
+h2::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #ef476f, #ffd166, #06d6a0);
+    border-radius: 2px;
+}
+
+.contact-info {
+    background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,249,250,0.9));
+    padding: 2rem;
+    border-radius: 15px;
+    margin-top: 2rem;
+    border-left: 5px solid #06d6a0;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-info h2 {
+    font-size: 2.2rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(90deg, #1b9aaa, #06d6a0);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.contact-info p {
+    font-size: 1.2rem;
+    margin-bottom: 1.2rem;
+    padding-left: 2.5rem;
+    position: relative;
+    color: #555;
+}
+
+.contact-info p::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.8rem;
+    height: 1.8rem;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.contact-info p:nth-child(2)::before { /* Facebook */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%231b9aaa"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>');
+}
+
+.contact-info p:nth-child(3)::before { /* Email */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ef476f"><path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z"/><path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z"/></svg>');
+}
+
+.contact-info p:nth-child(4)::before { /* WhatsApp */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234AC959"><path d="M6.337 17.468l.742.741c2.359 2.35 6.171 2.245 8.393-.212 2.223-2.458 2.065-6.344-.294-8.693-2.358-2.35-6.17-2.246-8.393.212a6.203 6.203 0 00-.748 7.952zm10.982-10.98a7.703 7.703 0 01.928 9.877l.84.84c3.14 3.14 3.14 8.226 0 11.366-3.14 3.14-8.226 3.14-11.366 0-3.14-3.14-3.14-8.226 0-11.366l.841-.84a7.703 7.703 0 019.877-.928 7.703 7.703 0 012.7 2.211zm-4.518 3.08a1.5 1.5 0 11-2.121-2.121 1.5 1.5 0 012.121 2.12z"/></svg>');
+}
+
+.contact-info p:nth-child(5)::before { /* Address */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffd166"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>');
+}
+
+a {
+    color: #1b9aaa;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    padding-bottom: 2px;
+}
+
+a:hover {
+    color: #ef476f;
+}
+
+a::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ef476f, #ffd166);
+    transition: width 0.3s ease;
+}
+
+a:hover::after {
+    width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        margin: 1.5rem;
+        padding: 1.8rem;
+    }
+    
+    h2 {
+        font-size: 2.2rem;
+    }
+    
+    .contact-info h2 {
+        font-size: 1.8rem;
+    }
+    
+    .contact-info p {
+        font-size: 1rem;
+        padding-left: 2rem;
+    }
+    
+    .contact-info p::before {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+}

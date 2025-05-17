@@ -1,0 +1,159 @@
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    margin: 0;
+    padding: 0 1rem;
+    text-align: center;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem 0;
+    background-color: #34495e;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    margin: 0 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+nav a:hover {
+    background-color: #2c3e50;
+}
+
+
+/* Cooking Videos Gallery - Updated Styles */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2.5rem;
+    padding: 3rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.tutorial {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 24px rgba(255, 107, 107, 0.15);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    background-image: linear-gradient(white, white), 
+                      linear-gradient(135deg, #ff6b6b, #ffd166, #06d6a0);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+}
+
+.tutorial:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(255, 107, 107, 0.25);
+}
+
+.tutorial h3 {
+    background: linear-gradient(135deg, #4a5283, #976969);
+    color: white;
+    margin: 0;
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    position: relative;
+}
+
+.tutorial h3::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: #ffd166;
+    border-radius: 3px;
+}
+
+.tutorial video {
+    width: 100%;
+    height: 250px; /* Fixed height for all videos */
+    object-fit: cover;
+    display: block;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+    transition: transform 0.3s ease;
+}
+
+.tutorial:hover video {
+    transform: scale(1.03);
+}
+
+/* Decorative Elements */
+.tutorial::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #aa8989, #9b885c, #2e6657, #1b9aaa);
+    z-index: -1;
+    border-radius: 22px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.tutorial:hover::before {
+    opacity: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .gallery {
+        grid-template-columns: 1fr;
+        padding: 1.5rem;
+        gap: 2rem;
+    }
+    
+    .tutorial video {
+        height: 220px;
+    }
+    
+    nav a {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Animation */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.tutorial:hover {
+    animation: float 3s ease-in-out infinite;
+}
