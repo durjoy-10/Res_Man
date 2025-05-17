@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Management System</title>
     <link rel="stylesheet" href="static/css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .restaurant-details {
             background: white;
@@ -172,8 +171,8 @@
     function getImageUrl($path, $type = 'restaurant') {
         // Default image paths
         $defaults = [
-            'restaurant' => '/static/media/default-restaurant.jpg',
-            'food' => '/static/media/default-food.jpg'
+            'restaurant' => '/uploads/restaurants/estaurant.jpg',
+            'food' => '/uploads/menu_items/food.jpg'
         ];
         
         // If no path provided or path is NULL, return default
