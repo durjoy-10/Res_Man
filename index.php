@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Management System</title>
     <link rel="stylesheet" href="static/css/styles.css">
-    <link rel="stylesheet" href="static/css/index.css">
 </head>
 <body>
     <header>
@@ -86,9 +85,11 @@
             if ($categories) {
                 echo '<h3>Menu</h3>';
                 
-                foreach ($categories as $category) {
+                foreach ($categories as $index => $category) {
+                    // Rotate through section-name color variants
+                    $colorClass = ['primary', 'success', 'warning', 'danger', 'purple', 'teal'][$index % 6];
                     echo '<div class="menu-category">';
-                    echo '<h3>' . htmlspecialchars($category['name']) . '</h3>';
+                    echo '<div class="section-name ' . $colorClass . '">' . htmlspecialchars($category['name']) . '</div>';
                     
                     if (!empty($category['description'])) {
                         echo '<p>' . htmlspecialchars($category['description']) . '</p>';
@@ -99,6 +100,7 @@
                     $items = $stmt->fetchAll();
                     
                     if ($items) {
+                        echo '<div class="menu-items-grid">';
                         foreach ($items as $item) {
                             echo '<div class="menu-item">';
                             
@@ -116,6 +118,7 @@
                             echo '</div>';
                             echo '</div>';
                         }
+                        echo '</div>';
                     } else {
                         echo '<p>No items in this category yet.</p>';
                     }
