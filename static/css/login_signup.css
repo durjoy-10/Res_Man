@@ -1,0 +1,218 @@
+/* Auth Pages - Adjustable & Dynamic Styling */
+:root {
+    --primary: #6c5ce7;
+    --secondary: #a29bfe;
+    --accent: #fd79a8;
+    --text: #2d3436; /* Default text color */
+    --text-light: #ffffff; /* For darker backgrounds */
+    --text-muted: #666; /* For secondary text like links */
+    --light: #f5f6fa;
+    --success: #00b894;
+    --warning: #fdcb6e;
+    --error: #d63031;
+    --form-bg: rgba(255, 255, 255, 0.2); /* Adjustable form background */
+    --input-bg: rgba(255, 255, 255, 0.7); /* Adjustable input background */
+}
+
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: url('../images/bg_res.png') no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: var(--text);
+}
+
+.auth-container {
+    background: var(--form-bg);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+h2 {
+    color: var(--primary);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    font-weight: 700;
+    position: relative;
+    font-family: 'Montserrat', sans-serif;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+h2::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 2px;
+    animation: lineGrow 0.8s ease-out;
+}
+
+@keyframes lineGrow {
+    0% { width: 0; opacity: 0; }
+    100% { width: 80px; opacity: 1; }
+}
+
+p {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+    transition: all 0.3s ease;
+    transform: translateX(0);
+}
+
+.form-group:hover {
+    transform: translateX(5px);
+}
+
+.form-group label {
+    color: var(--text);
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+}
+
+.form-group:hover label {
+    color: var(--primary);
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text);
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid rgba(108, 92, 231, 0.3);
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: var(--input-bg);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 5px rgba(253, 121, 168, 0.3);
+    background-color: white;
+    transform: scale(1.02);
+}
+
+input::placeholder {
+    color: #aaa;
+    font-style: italic;
+}
+
+button {
+    width: 100%;
+    padding: 0.9rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: var(--text-light);
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 1rem;
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+}
+
+button:hover {
+    background: linear-gradient(135deg, var(--secondary), var(--primary));
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(108, 92, 231, 0.6);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+p.auth-links {
+    text-align: center;
+    margin-top: 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+a:hover {
+    color: var(--accent);
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+    .auth-container {
+        padding: 1.5rem;
+        margin: 1rem;
+        border-radius: 10px;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    input, button {
+        padding: 0.7rem;
+    }
+}
+
+/* Adjustments for dark backgrounds */
+body.dark-bg {
+    color: var(--text-light);
+}
+
+body.dark-bg .form-group label,
+body.dark-bg p,
+body.dark-bg p.auth-links {
+    color: var(--text-light);
+}
+
+body.dark-bg input {
+    background-color: rgba(255, 255, 255, 0.9);
+}

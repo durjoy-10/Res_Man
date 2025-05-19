@@ -39,6 +39,7 @@ nav {
     padding: 0.5rem 0;
     background-color: #34495e;
 }
+
 nav a {
     color: white;
     text-decoration: none;
@@ -47,9 +48,62 @@ nav a {
     border-radius: 4px;
     transition: background-color 0.3s;
 }
+
 nav a:hover {
     background-color: #2c3e50;
 }
+
+
+a {
+    color: #1b9aaa;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    padding-bottom: 2px;
+}
+
+a:hover {
+    color: #ef476f;
+}
+
+a::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ef476f, #ffd166);
+    transition: width 0.3s ease;
+}
+
+a:hover::after {
+    width: 100%;
+}
+
+
+.logout-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 10px 25px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    cursor: pointer;
+    margin-left: 20px;
+    transition: 0.3s ease-in-out;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+    color: #ff4e50;
+}
+
 
 /* ---------------------- */
 /* Contact Page Container */
@@ -194,7 +248,8 @@ h2.restaurant-name {
 }
 .restaurant-card-horizontal {
     background-color: #fff;
-    width: 300px;
+    width: 350px;
+    height: 400px;
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -202,6 +257,38 @@ h2.restaurant-name {
     transition: transform 0.3s ease;
     margin: 15px 0;
 }
+
+.view-btn {
+    all: unset; /* Reset inherited a tag styles */
+    display: inline-block;
+    border: 2px solid #007bff;
+    color: #007bff;
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none !important; /* Prevent underline */
+    transition: all 0.3s ease;
+    position: relative;
+    background-color: transparent;
+}
+
+.view-btn::after {
+    content: " 👁️";
+    font-size: 16px;
+    vertical-align: middle;
+}
+
+.view-btn:hover {
+    background-color: #007bff;
+    color: white;
+    text-decoration: none !important;
+}
+
+
+
 .restaurant-card-horizontal:hover {
     transform: translateY(-5px);
 }

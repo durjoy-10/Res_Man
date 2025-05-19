@@ -42,6 +42,34 @@ nav a:hover {
 }
 
 
+a {
+    color: #1b9aaa;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    padding-bottom: 2px;
+}
+
+a:hover {
+    color: #ef476f;
+}
+
+a::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ef476f, #ffd166);
+    transition: width 0.3s ease;
+}
+
+a:hover::after {
+    width: 100%;
+}
+
 /* Cooking Videos Gallery - Updated Styles */
 .gallery {
     display: grid;
