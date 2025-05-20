@@ -88,10 +88,6 @@ p {
     transform: translateX(0);
 }
 
-.form-group:hover {
-    transform: translateX(5px);
-}
-
 .form-group label {
     color: var(--text);
     display: block;
