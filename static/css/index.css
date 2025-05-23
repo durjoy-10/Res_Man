@@ -102,6 +102,93 @@ a:hover::after {
     color: #ff4e50;
 }
 
+
+/* Profile Dropdown Styles */
+.profile-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-icon {
+    cursor: pointer;
+    font-size: 24px;
+    color: #5f27cd;
+    padding: 5px 10px;
+    transition: all 0.3s;
+}
+
+.profile-icon:hover {
+    color: #7d5fff;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #f9f9f9;
+    min-width: 220px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.dropdown-header {
+    padding: 15px;
+    background: linear-gradient(45deg, #5f27cd, #1dd1a1);
+    color: white;
+}
+
+.dropdown-header h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.dropdown-header p {
+    margin: 5px 0 0;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.dropdown-content a, .dropdown-content .logout-btn {
+    display: block;
+    padding: 12px 15px;
+    text-decoration: none;
+    color: #333;
+    text-align: left;
+    border: none;
+    background: none;
+    width: 100%;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.dropdown-content a i, .dropdown-content .logout-btn i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+.dropdown-content a:hover, .dropdown-content .logout-btn:hover {
+    background-color: #f1f1f1;
+    color: #5f27cd;
+}
+
+.dropdown-content .logout-btn {
+    border-top: 1px solid #eee;
+    color: #ff4757;
+}
+
+.dropdown-content .logout-btn:hover {
+    color: #ff6b81;
+}
+
+.show {
+    display: block;
+}
+
+
 /* ---------------------- */
 /* Restaurant Details Image - Larger Size */
 /* ---------------------- */

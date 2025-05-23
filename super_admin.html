@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Admin Panel</title>
-    <link rel="stylesheet" href="static/css/Super_admins.css">
+    <link rel="stylesheet" href="static/css/super_admins.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <script>
@@ -35,7 +36,9 @@
             <div class="tab" onclick="switchTab('manage')">
                 <i class="fas fa-utensils"></i> Manage Restaurants
             </div>
-            
+            <div class="tab" onclick="switchTab('orders')">
+                <i class="fas fa-shopping-bag"></i> Manage Orders
+            </div>
         </div>
         
         <div id="create-tab" class="tab-content active">
@@ -118,6 +121,23 @@
             <h2><i class="fas fa-edit"></i> Manage Restaurants</h2>
             <div class="restaurant-list" id="restaurants-list">
                 <!-- Restaurants will be loaded here -->
+            </div>
+        </div>
+        
+        <div id="orders-tab" class="tab-content">
+            <h2><i class="fas fa-shopping-bag"></i> Manage Orders</h2>
+            <div class="order-filters">
+                <select id="order-status-filter" onchange="loadOrders()">
+                    <option value="all">All Orders</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+                <input type="text" id="order-search" placeholder="Search by order ID or user..." onkeyup="loadOrders()">
+            </div>
+            <div class="order-list" id="orders-list">
+                <!-- Orders will be loaded here -->
             </div>
         </div>
     </div>
@@ -309,6 +329,157 @@
                     });
             }
         }
+        
+        // Load all orders
+function loadOrders() {
+    const status = document.getElementById('order-status-filter').value;
+    const search = document.getElementById('order-search').value;
+    const container = document.getElementById('orders-list');
+    
+    // Show loading state
+    container.innerHTML = '<div class="loading">Loading orders...</div>';
+    
+    fetch(`get_orders.php?status=${status}&search=${encodeURIComponent(search)}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            container.innerHTML = '';
+            
+            if (data.length === 0) {
+                container.innerHTML = '<p class="no-orders">No orders found matching your criteria.</p>';
+                return;
+            }
+            
+            data.forEach(order => {
+                const card = document.createElement('div');
+                card.className = 'order-card';
+                card.innerHTML = `
+                    <div class="order-header">
+                        <div>
+                            <h3>Order #${order.id}</h3>
+                            <p><i class="fas fa-user"></i> ${order.user_name} (ID: ${order.user_id})</p>
+                            <p><i class="fas fa-store"></i> ${order.name}</p>
+                        </div>
+                        <div>
+                            <p><i class="fas fa-calendar-alt"></i> ${new Date(order.order_date).toLocaleString()}</p>
+                            <p class="status-${order.status}">
+                                <i class="fas fa-info-circle"></i> ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="order-details">
+                        <p><i class="fas fa-map-marker-alt"></i> ${order.delivery_address}</p>
+                        ${order.special_instructions ? `<p><i class="fas fa-sticky-note"></i> ${order.special_instructions}</p>` : ''}
+                        
+                        <div class="order-items">
+                            ${order.items.split(', ').map(item => `
+                                <div class="order-item">
+                                    <span>${item.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="order-total">
+                            <strong>Total:</strong> $${parseFloat(order.total_amount).toFixed(2)}
+                        </div>
+                    </div>
+                    
+                    <div class="order-actions">
+                        ${order.status === 'pending' ? `
+                            <button class="btn btn-process" onclick="updateOrderStatus(${order.id}, 'processing')">
+                                <i class="fas fa-spinner"></i> Mark as Processing
+                            </button>
+                        ` : ''}
+                        
+                        ${order.status === 'processing' ? `
+                            <button class="btn btn-deliver" onclick="updateOrderStatus(${order.id}, 'delivered')">
+                                <i class="fas fa-truck"></i> Mark as Delivered
+                            </button>
+                        ` : ''}
+                        
+                        ${(order.status === 'pending' || order.status === 'processing') ? `
+                            <button class="btn btn-cancel" onclick="updateOrderStatus(${order.id}, 'cancelled')">
+                                <i class="fas fa-times"></i> Cancel Order
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading orders:', error);
+            container.innerHTML = `
+                <div class="error-message">
+                    <p>Failed to load orders</p>
+                    <p>${error.message}</p>
+                    <button onclick="loadOrders()" class="btn btn-retry">
+                        <i class="fas fa-sync-alt"></i> Try Again
+                    </button>
+                </div>
+            `;
+        });
+}
+
+        
+function updateOrderStatus(orderId, newStatus) {
+    if (!confirm(`Are you sure you want to change order #${orderId} status to "${newStatus}"?`)) {
+        return;
+    }
+
+    // Disable all action buttons during update
+    const buttons = document.querySelectorAll(`.order-actions button`);
+    buttons.forEach(btn => {
+        btn.disabled = true;
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Updating...`;
+        btn.dataset.original = originalHTML;
+    });
+
+    fetch('update_order_status.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            order_id: orderId,
+            status: newStatus
+        })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
+    .then(data => {
+        if (!data.success) throw new Error(data.message || 'Status update failed');
+        
+        // Show success message
+        const successMsg = document.createElement('div');
+        successMsg.className = 'success-message';
+        successMsg.innerHTML = `
+            <i class="fas fa-check-circle"></i> Order #${orderId} status updated to ${newStatus}
+        `;
+        document.getElementById('orders-list').prepend(successMsg);
+        
+        // Refresh orders list after 1 second
+        setTimeout(() => {
+            loadOrders();
+        }, 1000);
+    })
+    .catch(error => {
+        console.error('Update error:', error);
+        alert(`Failed to update order status: ${error.message}`);
+        
+        // Restore buttons
+        buttons.forEach(btn => {
+            btn.disabled = false;
+            btn.innerHTML = btn.dataset.original;
+        });
+    });
+}
         
         // Form submission
         document.getElementById('restaurant-form').addEventListener('submit', function(e) {

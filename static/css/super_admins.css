@@ -1,0 +1,245 @@
+/* Add all your existing styles here */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+.logout-btn {
+    background: transparent;
+    color: #1d5297;
+    padding: 10px 60px;
+    border: 2px solid #1d5297;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.logout-btn:hover {
+    color: white;
+    background: #1d5297;
+    box-shadow: 0 5px 15px rgba(29, 82, 151, 0.3);
+}
+
+.logout-btn::before {
+    content: "🚪"; /* Using emoji for simplicity */
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.logout-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+
+.logout-btn:hover::after {
+    animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(20, 20);
+        opacity: 0;
+    }
+}
+
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.tab-container {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    background: #f1f1f1;
+    margin-right: 5px;
+    border-radius: 5px 5px 0 0;
+}
+.tab.active {
+    background: #4CAF50;
+    color: white;
+}
+.tab-content {
+    display: none;
+    padding: 20px;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.tab-content.active {
+    display: block;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+.btn-primary {
+    background-color: #4CAF50;
+    color: white;
+}
+.btn-secondary {
+    background-color: #2196F3;
+    color: white;
+}
+.btn-danger {
+    background-color: #f44336;
+    color: white;
+}
+.category-container {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #dee2e6;
+}
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.menu-item-group {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #dee2e6;
+}
+.item-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+.category-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+.restaurant-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    background: white;
+}
+.restaurant-card img {
+    max-width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.no-image {
+    background: #eee;
+    padding: 20px;
+    text-align: center;
+    border-radius: 4px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+.restaurant-header {
+    margin-bottom: 15px;
+}
+
+/* Order Actions */
+.order-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-process {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.btn-deliver {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-cancel {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-retry {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Status messages */
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.loading, .no-orders {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+}

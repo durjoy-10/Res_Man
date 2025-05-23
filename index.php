@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Management System</title>
-    <link rel="stylesheet" href="static/css/indexs.css">
+    <link rel="stylesheet" href="static/css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="static/css/cart.css">
 </head>
@@ -18,7 +18,26 @@
             <a href="cooking_video.html">Cooking Videos</a>
             <a href="about.html">About</a>
             <a href="contact.html">Contact</a>
-            <button class="logout-btn" onclick="window.location.href='logout.php'">Logout</button>
+            
+            <!-- Profile Dropdown -->
+            <div class="profile-dropdown">
+                <div class="profile-icon" onclick="toggleProfileDropdown()">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="dropdown-content" id="profile-dropdown">
+                    <div class="dropdown-header">
+                        <h4><?php echo htmlspecialchars($user['name']); ?></h4>
+                        <p><?php echo htmlspecialchars($user['email']); ?></p>
+                    </div>
+                    <a href="profile.php"><i class="fas fa-user"></i> My Profile</a>
+                    <a href="change_password.php"><i class="fas fa-key"></i> Change Password</a>
+                    <a href="order_history.php"><i class="fas fa-history"></i> Order History</a>
+                    <button class="logout-btn" onclick="window.location.href='logout.php'">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+
+            </div>
         </nav>
     </header>
 
@@ -533,6 +552,24 @@
                 searchFood();
             }
         });
+
+        function toggleProfileDropdown() {
+            document.getElementById('profile-dropdown').classList.toggle('show');
+        }
+        
+        // Close the dropdown if clicked outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.profile-icon') && !event.target.closest('.profile-icon')) {
+                const dropdowns = document.getElementsByClassName('dropdown-content');
+                for (let i = 0; i < dropdowns.length; i++) {
+                    const openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
     </script>
 </body>
 </html>
