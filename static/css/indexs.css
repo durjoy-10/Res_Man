@@ -253,6 +253,133 @@ h2.restaurant-name {
     width: 100%;
 }
 
+/* ---------------------- */
+/* Sidebar Styling - Updated with Colorful Design */
+/* ---------------------- */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0px;
+    width: 260px;
+    height: 900px;
+    background: linear-gradient(180deg, #2c3e50, #34495e);
+    border-right: 3px solid #ffd166;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    transform: translateX(-100%);
+}
+
+.sidebar.open {
+    display: block;
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.sidebar-category {
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-category:hover {
+    background: rgba(255, 107, 107, 0.2);
+    transform: translateX(10px);
+}
+
+.sidebar-category.active {
+    background: linear-gradient(90deg, #ef476f, #ffd166);
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+.sidebar-category::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 5px;
+    height: 100%;
+    background: #06d6a0;
+    transition: width 0.3s ease;
+}
+
+.sidebar-category:hover::before {
+    width: 10px;
+}
+
+/* ---------------------- */
+/* Menu Section Button - Colorful and Unique */
+/* ---------------------- */
+.menu-section-btn {
+    display: inline-block;
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #ff6b6b, #ffd166, #06d6a0);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 10;
+}
+
+.menu-section-btn:hover {
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, #06d6a0, #ffd166, #ff6b6b);
+}
+
+.menu-section-btn::before {
+    content: '🍽️';
+    margin-right: 8px;
+    font-size: 1.2rem;
+}
+
+/* ---------------------- */
+/* Responsive adjustments for Sidebar and Menu Button */
+/* ---------------------- */
+@media (max-width: 768px) {
+    .sidebar {
+        position: relative;
+        top: auto;
+        height: auto;
+        width: 100%;
+        margin-bottom: 20px;
+        display: none;
+        transform: none;
+        opacity: 1;
+    }
+    
+    .sidebar.open {
+        display: block;
+    }
+    
+    .menu-section-btn {
+        position: static;
+        transform: none;
+        margin: 20px auto;
+        display: block;
+        text-align: center;
+    }
+}
 
 /* ---------------------- */
 /* Menu Section Styling - Enhanced */

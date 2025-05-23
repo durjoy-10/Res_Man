@@ -5,22 +5,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Management System</title>
-    <link rel="stylesheet" href="static/css/index.css">
+    <link rel="stylesheet" href="static/css/indexs.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="static/css/cart.css">
 </head>
 <body>
     <header>
         <h1>Restaurant Management System</h1>
         <nav>
             <a href="index.php">Home</a>
+            <a href="order_history.php">My Orders</a>
             <a href="cooking_video.html">Cooking Videos</a>
             <a href="about.html">About</a>
             <a href="contact.html">Contact</a>
             <button class="logout-btn" onclick="window.location.href='logout.php'">Logout</button>
         </nav>
     </header>
+
+    <!-- Cart Icon -->
+    <div class="cart-icon" onclick="toggleCart()">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-count" id="cart-count">0</span>
+    </div>
     
+    <!-- Cart Container -->
+    <div class="cart-container" id="cart-container">
+        <div class="cart-header">
+            <h3>Your Order</h3>
+            <i class="fas fa-times" onclick="toggleCart()" style="cursor:pointer;"></i>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <!-- Cart items will be added here dynamically -->
+        </div>
+        <div class="cart-total">
+            Total: $<span id="cart-total">0.00</span>
+        </div>
+        <button class="checkout-btn" onclick="showCheckoutForm()">Proceed to Checkout</button>
+    </div>
+    
+    <!-- Checkout Form (initially hidden) -->
+    <div id="checkout-form-container" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center;">
+        <div style="background:white; padding:20px; border-radius:10px; width:500px; max-width:90%;">
+            <h2>Checkout</h2>
+            <form id="checkout-form">
+                <input type="hidden" name="restaurant_id" id="checkout-restaurant-id">
+                <div class="form-group">
+                    <label>Delivery Address:</label>
+                    <textarea name="delivery_address" required style="width:100%; padding:10px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Special Instructions (optional):</label>
+                    <textarea name="special_instructions" style="width:100%; padding:10px;"></textarea>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                    <button type="button" onclick="hideCheckoutForm()" style="padding:10px 20px; background:#ccc; border:none; border-radius:5px; cursor:pointer;">Cancel</button>
+                    <button type="submit" style="padding:10px 20px; background:#5f27cd; color:white; border:none; border-radius:5px; cursor:pointer;">Place Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <?php
     require 'db_connection.php';
+    
+    // Get user details
+    $user_stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+    $user_stmt->execute([$_SESSION['user_id']]);
+    $user = $user_stmt->fetch();
     
     function getImageUrl($path, $type = 'restaurant') {
         $baseDir = '/opt/lampp/htdocs/restaurant_management/';
@@ -77,19 +128,70 @@
             echo '<p>' . htmlspecialchars($restaurant['description']) . '</p>';
             echo '<p><i class="fas fa-phone"></i> ' . htmlspecialchars($restaurant['phone']) . '</p>';
             echo '<p><i class="fas fa-map-marker-alt"></i> ' . htmlspecialchars($restaurant['address']) . '</p>';
+
+            // Sidebar with menu sections
+            echo '<div class="sidebar" id="sidebar">';
+            echo '<h3 style="text-align: center; padding: 15px;color:rgb margin: 0;
+                            color:rgb(219, 101, 21); border-bottom: 1px solid #ddd;">Menu Sections
+                  </h3>';
             
             $stmt = $pdo->prepare("SELECT * FROM menu_categories WHERE restaurant_id = ?");
             $stmt->execute([$restaurant_id]);
             $categories = $stmt->fetchAll();
             
             if ($categories) {
-                echo '<h3>Menu</h3>';
+                foreach ($categories as $category) {
+                    echo '<div class="sidebar-category" onclick="scrollToCategory(' . $category['id'] . ')">';
+                    echo htmlspecialchars($category['name']);
+                    echo '</div>';
+                }
+            } else {
+                echo '<div style="padding: 15px;">No categories available</div>';
+            }
+            echo '</div>';
+            
+            // Main restaurant content
+            echo '<div class="restaurant-container">';
+            echo '<div class="restaurant-content">';
+            
+            $stmt = $pdo->prepare("SELECT * FROM menu_categories WHERE restaurant_id = ?");
+            $stmt->execute([$restaurant_id]);
+            $categories = $stmt->fetchAll();
+                 
+            if ($categories) {
+                echo '<h3 style="background: linear-gradient(45deg, #ff6b6b, #5f27cd, #1dd1a1);
+                                 background-clip: text; color: transparent; 
+                                 font-size: 2rem; font-weight: 700; text-align: left;" >
+                      Menu</h3>';
+
+                // View Menu button to toggle sidebar
+                echo '<button class="view-menu-btn" onclick="toggleSidebar()" style="
+                    border: none; 
+                    background-color:rgb(199, 68, 133); 
+                    padding: 10px 15px; 
+                    cursor: pointer; 
+                    width: 15%; 
+                    text-align: center; 
+                    border-radius: 8px;
+                    transition: background-color 0.3s;
+                    font-family: Arial, sans-serif;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;">';
+                
+                echo '<i class="fas fa-bars" style="
+                    font-size: 18px; 
+                    color: #5f27cd; 
+                    transition: transform 0.3s;"></i>';
+                
+                echo '<span style="color: #333; font-size: 16px;">Menu Sections</span>';
+                
+                echo '</button>';
                 
                 foreach ($categories as $index => $category) {
-                    // Rotate through section-name color variants
                     $colorClass = ['primary', 'success', 'warning', 'danger', 'purple', 'teal'][$index % 6];
                     echo '<div class="menu-category">';
-                    echo '<div class="section-name ' . $colorClass . '">' . htmlspecialchars($category['name']) . '</div>';
+                    echo '<div class="section-name ' . $colorClass . '" data-category-id="' . $category['id'] . '">' . htmlspecialchars($category['name']) . '</div>';
                     
                     if (!empty($category['description'])) {
                         echo '<p>' . htmlspecialchars($category['description']) . '</p>';
@@ -115,6 +217,12 @@
                             echo '<h4>' . htmlspecialchars($item['name']) . '</h4>';
                             echo '<p>' . htmlspecialchars($item['description']) . '</p>';
                             echo '<p class="menu-item-price">$' . number_format($item['price'], 2) . '</p>';
+                            
+                            // Add to cart button
+                            echo '<button class="add-to-cart-btn" onclick="addToCart(' . $item['id'] . ', \'' . htmlspecialchars(addslashes($item['name'])) . '\', ' . $item['price'] . ')">';
+                            echo '<i class="fas fa-plus"></i> Add to Order';
+                            echo '</button>';
+                            
                             echo '</div>';
                             echo '</div>';
                         }
@@ -129,208 +237,302 @@
                 echo '<p>No menu categories available yet.</p>';
             }
             
-            echo '<div class="order-form">';
-            echo '<h2>Place Your Order</h2>';
-            echo '<form id="order-form" action="process_order.php" method="POST">';
-            echo '<input type="hidden" name="restaurant_id" value="' . $restaurant_id . '">';
-            
-            echo '<div class="form-row">';
-            echo '<div class="form-group">';
-            echo '<label for="name">Your Name:</label>';
-            echo '<input type="text" id="name" name="name" required>';
             echo '</div>';
-            
-            echo '<div class="form-group">';
-            echo '<label for="email">Email:</label>';
-            echo '<input type="email" id="email" name="email" required>';
+            echo '</div>';
             echo '</div>';
             echo '</div>';
             
-            echo '<div class="form-row">';
-            echo '<div class="form-group">';
-            echo '<label for="phone">Phone:</label>';
-            echo '<input type="tel" id="phone" name="phone" required>';
-            echo '</div>';
-            
-            echo '<div class="form-group">';
-            echo '<label for="address">Delivery Address:</label>';
-            echo '<input type="text" id="address" name="address" required>';
-            echo '</div>';
-            echo '</div>';
-            
-            echo '<div class="form-group">';
-            echo '<label for="instructions">Special Instructions:</label>';
-            echo '<textarea id="instructions" name="instructions" rows="3"></textarea>';
-            echo '</div>';
-            
-            echo '<button type="submit" class="submit-btn">Place Order</button>';
-            echo '</form>';
-            echo '</div>';
-            
-            echo '</div>';
-            echo '</div>';
+            // Add hidden field for restaurant ID
+            echo '<input type="hidden" id="restaurant-id" value="' . $restaurant_id . '">';
         } else {
             echo '<div class="container"><p>Restaurant not found.</p></div>';
         }
     } else {
         ?>
-        <div class="search-container">
-            <input type="text" id="search" placeholder="Search for food or restaurant...">
-            <button onclick="searchFood()"><i class="fas fa-search"></i> Search</button>
-        </div>
-        
-        <div id="search-results" class="search-results"></div>
-        
-        <div class="restaurants-container">
-            <div class="section-title">
-                <h2>All Restaurants</h2>
+        <div class="container">
+            <div class="search-container">
+                <input type="text" id="search" placeholder="Search for food or restaurant...">
+                <button onclick="searchFood()"><i class="fas fa-search"></i> Search</button>
             </div>
             
-            <div class="restaurants-horizontal-scroll" id="restaurants-horizontal">
-                <?php
-                $stmt = $pdo->query("SELECT * FROM restaurants ORDER BY id DESC");
-                while ($restaurant = $stmt->fetch()):
-                    $image_url = getImageUrl($restaurant['image_path'], 'restaurant');
-                ?>
-                <div class="restaurant-card-horizontal">
-                    <?php if (empty($restaurant['image_path']) || strpos($image_url, 'default-restaurant.jpg') !== false): ?>
-                        <div class="restaurant-card-default-image default-image">
-                            <i class="fas fa-store"></i>
-                        </div>
-                    <?php else: ?>
-                        <img src="<?= htmlspecialchars($image_url) ?>" 
-                             alt="<?= htmlspecialchars($restaurant['name']) ?>"
-                             onerror="this.onerror=null;this.src='<?= getImageUrl(null, 'restaurant') ?>'">
-                    <?php endif; ?>
-                    <h3><?= htmlspecialchars($restaurant['name']) ?></h3>
-                    <div class="restaurant-info">
-                        <p><i class="fas fa-info-circle"></i> <?= htmlspecialchars($restaurant['description']) ?></p>
-                        <p><i class="fas fa-phone"></i> <?= htmlspecialchars($restaurant['phone']) ?></p>
-                        <p><i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($restaurant['address']) ?></p>
-                    </div>
-                    <a href="index.php?restaurant_id=<?= $restaurant['id'] ?>" class="view-btn">View Menu</a>
+            <div id="search-results" class="search-results"></div>
+            
+            <div class="restaurants-container">
+                <div class="section-title">
+                    <h2>All Restaurants</h2>
                 </div>
-                <?php endwhile; ?>
+                
+                <div class="restaurants-horizontal-scroll" id="restaurants-horizontal">
+                    <?php
+                    $stmt = $pdo->query("SELECT * FROM restaurants ORDER BY id DESC");
+                    while ($restaurant = $stmt->fetch()):
+                        $image_url = getImageUrl($restaurant['image_path'], 'restaurant');
+                    ?>
+                    <div class="restaurant-card-horizontal">
+                        <?php if (empty($restaurant['image_path']) || strpos($image_url, 'default-restaurant.jpg') !== false): ?>
+                            <div class="restaurant-card-default-image default-image">
+                                <i class="fas fa-store"></i>
+                            </div>
+                        <?php else: ?>
+                            <img src="<?= htmlspecialchars($image_url) ?>" 
+                                 alt="<?= htmlspecialchars($restaurant['name']) ?>"
+                                 onerror="this.onerror=null;this.src='<?= getImageUrl(null, 'restaurant') ?>'">
+                        <?php endif; ?>
+                        <h3><?= htmlspecialchars($restaurant['name']) ?></h3>
+                        <div class="restaurant-info">
+                            <p><i class="fas fa-info-circle"></i> <?= htmlspecialchars($restaurant['description']) ?></p>
+                            <p><i class="fas fa-phone"></i> <?= htmlspecialchars($restaurant['phone']) ?></p>
+                            <p><i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($restaurant['address']) ?></p>
+                        </div>
+                        <a href="index.php?restaurant_id=<?= $restaurant['id'] ?>" class="view-btn">View Menu</a>
+                    </div>
+                    <?php endwhile; ?>
+                </div>
             </div>
         </div>
-        
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('img').forEach(img => {
-                    img.onerror = function() {
-                        const container = document.createElement('div');
-                        if (this.classList.contains('menu-item-image')) {
-                            container.className = 'menu-item-default-image default-image';
-                            container.innerHTML = '<i class="fas fa-utensils"></i>';
-                        } else {
-                            container.className = 'restaurant-card-default-image default-image';
-                            container.innerHTML = '<i class="fas fa-store"></i>';
-                        }
-                        this.replaceWith(container);
-                    };
-                });
-            });
-
-            function searchFood() {
-                const query = document.getElementById('search').value.trim();
-                if (query === '') {
-                    document.getElementById('search-results').innerHTML = '';
-                    return;
-                }
-                
-                fetch(`get_food_search.php?query=${encodeURIComponent(query)}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        return response.json();
-                    })
-                    .then(data => {
-                        const resultsContainer = document.getElementById('search-results');
-                        resultsContainer.innerHTML = '';
-                        
-                        if (data.length === 0) {
-                            resultsContainer.innerHTML = '<div class="no-results"><i class="fas fa-utensils"></i> No results found for your search.</div>';
-                            return;
-                        }
-                        
-                        const resultsList = document.createElement('div');
-                        resultsList.className = 'food-results';
-                        
-                        data.forEach(item => {
-                            const itemImageUrl = item.image_path ? 
-                                (item.image_path.startsWith('http') ? item.image_path : '/' + item.image_path) : 
-                                '/static/media/default-food.jpg';
-                            
-                            const resultItem = document.createElement('div');
-                            resultItem.className = 'food-item';
-                            resultItem.innerHTML = `
-                                <div class="food-image">
-                                    <img src="${itemImageUrl}" alt="${item.name}" onerror="this.onerror=null;this.src='/static/media/default-food.jpg'">
-                                </div>
-                                <div class="food-details">
-                                    <h3>${item.name}</h3>
-                                    <p class="food-description">${item.description}</p>
-                                    <p class="food-price"><strong>Price:</strong> $${item.price.toFixed(2)}</p>
-                                    <p class="food-restaurant"><i class="fas fa-store"></i> ${item.restaurant_name}</p>
-                                    <a href="index.php?restaurant_id=${item.restaurant_id}" class="order-btn"><i class="fas fa-shopping-cart"></i> Order Now</a>
-                                </div>
-                            `;
-                            resultsList.appendChild(resultItem);
-                        });
-                        
-                        resultsContainer.appendChild(resultsList);
-                    })
-                    .catch(error => {
-                        console.error('Search error:', error);
-                        document.getElementById('search-results').innerHTML = 
-                            '<div class="error-message"><i class="fas fa-exclamation-triangle"></i> Error loading search results</div>';
-                    });
-            }
-            
-            document.getElementById('search').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchFood();
-                }
-            });
-            
-            if (document.getElementById('order-form')) {
-                document.getElementById('order-form').addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const form = this;
-                    const submitBtn = form.querySelector('button[type="submit"]');
-                    const originalText = submitBtn.innerHTML;
-                    
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                    submitBtn.disabled = true;
-                    
-                    const formData = new FormData(form);
-                    
-                    fetch('process_order.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Order placed successfully! Order ID: ' + data.order_id);
-                            form.reset();
-                        } else {
-                            throw new Error(data.message || 'Failed to place order');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Order error:', error);
-                        alert('Error: ' + error.message);
-                    })
-                    .finally(() => {
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                    });
-                });
-            }
-        </script>
         <?php
     }
     ?>
+    
+    <script>
+        // Cart functionality
+        let cart = [];
+        const restaurantId = document.getElementById('restaurant-id') ? document.getElementById('restaurant-id').value : null;
+        
+        function toggleCart() {
+            const cartContainer = document.getElementById('cart-container');
+            cartContainer.style.display = cartContainer.style.display === 'block' ? 'none' : 'block';
+            updateCartDisplay();
+        }
+        
+        function addToCart(itemId, itemName, itemPrice) {
+            // Check if item already in cart
+            const existingItem = cart.find(item => item.id === itemId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: itemId,
+                    name: itemName,
+                    price: itemPrice,
+                    quantity: 1
+                });
+            }
+            
+            updateCartDisplay();
+            toggleCart(); // Show cart when adding an item
+        }
+        
+        function updateCartItem(itemId, change) {
+            const itemIndex = cart.findIndex(item => item.id === itemId);
+            
+            if (itemIndex !== -1) {
+                cart[itemIndex].quantity += change;
+                
+                if (cart[itemIndex].quantity <= 0) {
+                    cart.splice(itemIndex, 1);
+                }
+            }
+            
+            updateCartDisplay();
+        }
+        
+        function updateCartDisplay() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartCountElement = document.getElementById('cart-count');
+            const cartTotalElement = document.getElementById('cart-total');
+            
+            // Update cart count
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCountElement.textContent = totalItems;
+            
+            // Update cart items display
+            cartItemsContainer.innerHTML = '';
+            
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p>Your cart is empty</p>';
+                cartTotalElement.textContent = '0.00';
+                return;
+            }
+            
+            let total = 0;
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                const itemElement = document.createElement('div');
+                itemElement.className = 'cart-item';
+                itemElement.innerHTML = `
+                    <div>
+                        <strong>${item.name}</strong>
+                        <div>$${item.price.toFixed(2)} x ${item.quantity}</div>
+                    </div>
+                    <div class="cart-item-controls">
+                        <button onclick="updateCartItem(${item.id}, -1)">-</button>
+                        <span class="cart-item-quantity">${item.quantity}</span>
+                        <button onclick="updateCartItem(${item.id}, 1)">+</button>
+                    </div>
+                `;
+                cartItemsContainer.appendChild(itemElement);
+            });
+            
+            cartTotalElement.textContent = total.toFixed(2);
+        }
+        
+        function showCheckoutForm() {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+            
+            document.getElementById('checkout-form-container').style.display = 'flex';
+            document.getElementById('checkout-restaurant-id').value = restaurantId;
+        }
+        
+        function hideCheckoutForm() {
+            document.getElementById('checkout-form-container').style.display = 'none';
+        }
+        
+        // Handle checkout form submission
+        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const orderData = {
+                restaurant_id: restaurantId,
+                items: cart,
+                delivery_address: formData.get('delivery_address'),
+                special_instructions: formData.get('special_instructions')
+            };
+            
+            fetch('process_order.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Order placed successfully! Order ID: ' + data.order_id);
+                    cart = [];
+                    updateCartDisplay();
+                    hideCheckoutForm();
+                } else {
+                    throw new Error(data.message || 'Failed to place order');
+                }
+            })
+            .catch(error => {
+                console.error('Order error:', error);
+                alert('Error: ' + error.message);
+            });
+        });
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function scrollToCategory(categoryId) {
+            const categoryElement = document.querySelector(`[data-category-id="${categoryId}"]`);
+            if (categoryElement) {
+                categoryElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Highlight the active category
+                document.querySelectorAll('.sidebar-category').forEach(el => el.classList.remove('active'));
+                document.querySelector(`.sidebar-category[onclick="scrollToCategory(${categoryId})"]`).classList.add('active');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Image error handling
+            document.querySelectorAll('img').forEach(img => {
+                img.onerror = function() {
+                    const container = document.createElement('div');
+                    if (this.classList.contains('menu-item-image')) {
+                        container.className = 'menu-item-default-image default-image';
+                        container.innerHTML = '<i class="fas fa-utensils"></i>';
+                    } else {
+                        container.className = 'restaurant-card-default-image default-image';
+                        container.innerHTML = '<i class="fas fa-store"></i>';
+                    }
+                    this.replaceWith(container);
+                };
+            });
+
+            // Close sidebar when clicking outside (for mobile)
+            if (window.innerWidth <= 768) {
+                document.addEventListener('click', function(event) {
+                    const sidebar = document.getElementById('sidebar');
+                    const viewMenuBtn = document.querySelector('.view-menu-btn');
+                    if (!sidebar.contains(event.target) && event.target !== viewMenuBtn && !viewMenuBtn.contains(event.target)) {
+                        sidebar.classList.remove('open');
+                    }
+                });
+            }
+        });
+
+        function searchFood() {
+            const query = document.getElementById('search').value.trim();
+            if (query === '') {
+                document.getElementById('search-results').innerHTML = '';
+                return;
+            }
+            
+            fetch(`get_food_search.php?query=${encodeURIComponent(query)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    const resultsContainer = document.getElementById('search-results');
+                    resultsContainer.innerHTML = '';
+                    
+                    if (data.length === 0) {
+                        resultsContainer.innerHTML = '<div class="no-results"><i class="fas fa-utensils"></i> No results found for your search.</div>';
+                        return;
+                    }
+                    
+                    const resultsList = document.createElement('div');
+                    resultsList.className = 'food-results';
+                    
+                    data.forEach(item => {
+                        const itemImageUrl = item.image_path ? 
+                            (item.image_path.startsWith('http') ? item.image_path : '/' + item.image_path) : 
+                            '/static/media/default-food.jpg';
+                        
+                        const resultItem = document.createElement('div');
+                        resultItem.className = 'food-item';
+                        resultItem.innerHTML = `
+                            <div class="food-image">
+                                <img src="${itemImageUrl}" alt="${item.name}" onerror="this.onerror=null;this.src='/static/media/default-food.jpg'">
+                            </div>
+                            <div class="food-details">
+                                <h3>${item.name}</h3>
+                                <p class="food-description">${item.description}</p>
+                                <p class="food-price"><strong>Price:</strong> $${item.price.toFixed(2)}</p>
+                                <p class="food-restaurant"><i class="fas fa-store"></i> ${item.restaurant_name}</p>
+                                <a href="index.php?restaurant_id=${item.restaurant_id}" class="order-btn"><i class="fas fa-shopping-cart"></i> Order Now</a>
+                            </div>
+                        `;
+                        resultsList.appendChild(resultItem);
+                    });
+                    
+                    resultsContainer.appendChild(resultsList);
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    document.getElementById('search-results').innerHTML = 
+                        '<div class="error-message"><i class="fas fa-exclamation-triangle"></i> Error loading search results</div>';
+                });
+        }
+        
+        document.getElementById('search').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchFood();
+            }
+        });
+    </script>
 </body>
 </html>
