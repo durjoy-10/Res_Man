@@ -1,81 +1,251 @@
+/* ===== Modern Profile Page Styles ===== */
 .container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 30px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.profile-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    padding: 40px;
     max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
 }
 
-.alert {
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 4px;
+.profile-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background: linear-gradient(90deg, #5f27cd, #1dd1a1, #ff6b6b);
 }
 
-.alert.success {
-    background-color: #d4edda;
-    color: #155724;
+.profile-container h2 {
+    color: #2c3e50;
+    margin-bottom: 35px;
+    text-align: center;
+    font-size: 2.2rem;
+    position: relative;
+    padding-bottom: 15px;
 }
 
-.alert.error {
-    background-color: #f8d7da;
-    color: #721c24;
+.profile-container h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #5f27cd, #1dd1a1);
+    border-radius: 2px;
 }
 
 .profile-form {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
 }
 
+/* Profile Photo Section - Centered & Animated */
+.profile-photo-section {
+    flex: 0 0 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.profile-photo-container {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 4px solid #5f27cd;
+    box-shadow: 0 5px 15px rgba(95, 39, 205, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.profile-photo-container:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(95, 39, 205, 0.4);
+}
+
+.profile-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.profile-photo:hover {
+    transform: scale(1.1);
+}
+
+.default-profile-photo {
+    font-size: 100px;
+    color: #5f27cd;
+    opacity: 0.7;
+}
+
+/* Upload Button - Gradient & Animated */
+.photo-upload {
+    text-align: center;
+    width: 100%;
+}
+
+.upload-btn {
+    background: linear-gradient(45deg, #5f27cd, #8e44ad);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    border: none;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(95, 39, 205, 0.3);
+}
+
+.upload-btn:hover {
+    background: linear-gradient(45deg, #8e44ad, #5f27cd);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(95, 39, 205, 0.4);
+}
+
+.upload-btn i {
+    font-size: 1.1rem;
+}
+
+/* Form Elements - Modern Styling */
 .form-group {
-    margin-bottom: 15px;
+    flex: 1;
+    min-width: 250px;
+    position: relative;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
+    padding: 12px 15px;
+    border: 2px solid #e0e6ed;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: #f8fafc;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: #5f27cd;
+    box-shadow: 0 0 0 3px rgba(95, 39, 205, 0.2);
+    outline: none;
+    background-color: white;
 }
 
 .form-group textarea {
-    min-height: 100px;
+    min-height: 120px;
+    resize: vertical;
 }
 
-.btn {
-    display: inline-block;
-    padding: 10px 20px;
-    background: #5f27cd;
+/* Save Button - Floating Action */
+.form-actions {
+    flex: 0 0 100%;
+    text-align: center;
+    margin-top: 30px;
+}
+
+.save-btn {
+    background: linear-gradient(45deg, #5f27cd, #1dd1a1);
     color: white;
     border: none;
-    border-radius: 4px;
+    padding: 14px 30px;
+    border-radius: 50px;
     cursor: pointer;
-    font-size: 16px;
-    text-decoration: none;
-    transition: background 0.3s;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(29, 209, 161, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.btn:hover {
-    background: #7d5fff;
+.save-btn:hover {
+    background: linear-gradient(45deg, #1dd1a1, #5f27cd);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(29, 209, 161, 0.4);
 }
 
-.btn.secondary {
-    background: #6c757d;
-    margin-top: 10px;
+.save-btn i {
+    font-size: 1.1rem;
 }
 
-.btn.secondary:hover {
-    background: #5a6268;
+/* Alert Messages - Animated */
+.alert {
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    border-radius: 8px;
+    animation: fadeIn 0.5s ease;
 }
 
-.profile-actions {
-    margin-top: 20px;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.alert-success {
+    background: linear-gradient(to right, #d4edda, #e8f5e9);
+    color: #155724;
+    border-left: 5px solid #2ecc71;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+    
+    .profile-container {
+        padding: 30px 20px;
+    }
+    
+    .profile-photo-container {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .form-group {
+        min-width: 100%;
+    }
+    
+    .save-btn {
+        width: 100%;
+        justify-content: center;
+    }
 }

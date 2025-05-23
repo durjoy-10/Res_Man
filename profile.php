@@ -9,21 +9,46 @@ $user = $user_stmt->fetch();
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = $_POST['name'] ?? $user['name'];
-    $email = $_POST['email'] ?? $user['email'];
-    $phone = $_POST['phone'] ?? $user['phone'];
-    $address = $_POST['address'] ?? $user['address'];
+    $name = $_POST['name'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $phone = $_POST['phone'] ?? '';
+    $address = $_POST['address'] ?? '';
     
-    try {
-        $update_stmt = $pdo->prepare("UPDATE users SET name = ?, email = ?, phone = ?, address = ? WHERE id = ?");
-        $update_stmt->execute([$name, $email, $phone, $address, $_SESSION['user_id']]);
+    // Handle profile photo upload
+    $profile_photo = $user['profile_photo']; // Keep existing if no new upload
+    
+    if (isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = 'static/uploads/profile_photos/';
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
         
-        $_SESSION['success_message'] = 'Profile updated successfully!';
-        header('Location: profile.php');
-        exit();
-    } catch (PDOException $e) {
-        $_SESSION['error_message'] = 'Error updating profile: ' . $e->getMessage();
+        $fileExt = pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION);
+        $fileName = 'user_' . $_SESSION['user_id'] . '_' . time() . '.' . $fileExt;
+        $targetPath = $uploadDir . $fileName;
+        
+        // Check if image file is an actual image
+        $check = getimagesize($_FILES['profile_photo']['tmp_name']);
+        if ($check !== false) {
+            if (move_uploaded_file($_FILES['profile_photo']['tmp_name'], $targetPath)) {
+                // Delete old profile photo if it exists
+                if (!empty($user['profile_photo']) && file_exists($user['profile_photo'])) {
+                    unlink($user['profile_photo']);
+                }
+                $profile_photo = $targetPath;
+            }
+        }
     }
+    
+    // Update user in database
+    $update_stmt = $pdo->prepare("UPDATE users SET name = ?, email = ?, phone = ?, address = ?, profile_photo = ? WHERE id = ?");
+    $update_stmt->execute([$name, $email, $phone, $address, $profile_photo, $_SESSION['user_id']]);
+    
+    // Refresh user data
+    $user_stmt->execute([$_SESSION['user_id']]);
+    $user = $user_stmt->fetch();
+    
+    $success_message = "Profile updated successfully!";
 }
 ?>
 
@@ -32,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile</title>
+    <title>My Profile - Restaurant Management System</title>
     <link rel="stylesheet" href="static/css/profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -40,51 +65,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php require 'header.php'; ?>
     
     <div class="container">
-        <h2>My Profile</h2>
-        
-        <?php if (isset($_SESSION['success_message'])): ?>
-            <div class="alert success">
-                <?= $_SESSION['success_message'] ?>
-                <?php unset($_SESSION['success_message']); ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if (isset($_SESSION['error_message'])): ?>
-            <div class="alert error">
-                <?= $_SESSION['error_message'] ?>
-                <?php unset($_SESSION['error_message']); ?>
-            </div>
-        <?php endif; ?>
-        
-        <form method="POST" class="profile-form">
-            <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" name="name" value="<?= htmlspecialchars($user['name']) ?>" required>
-            </div>
+        <div class="profile-container">
+            <h2>My Profile</h2>
             
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required>
-            </div>
+            <?php if (isset($success_message)): ?>
+                <div class="alert alert-success"><?php echo htmlspecialchars($success_message); ?></div>
+            <?php endif; ?>
             
-            <div class="form-group">
-                <label>Phone</label>
-                <input type="tel" name="phone" value="<?= htmlspecialchars($user['phone']) ?>">
-            </div>
-            
-            <div class="form-group">
-                <label>Address</label>
-                <textarea name="address"><?= htmlspecialchars($user['address']) ?></textarea>
-            </div>
-            
-            <button type="submit" class="btn">Update Profile</button>
-        </form>
-        
-        <div class="profile-actions">
-            <a href="change_password.php" class="btn secondary">
-                <i class="fas fa-key"></i> Change Password
-            </a>
+            <form method="POST" enctype="multipart/form-data" class="profile-form">
+                <div class="profile-photo-section">
+                    <div class="profile-photo-container">
+                        <?php if (!empty($user['profile_photo'])): ?>
+                            <img src="<?php echo htmlspecialchars($user['profile_photo']); ?>" 
+                                 alt="Profile Photo" 
+                                 class="profile-photo"
+                                 onerror="this.onerror=null;this.src='static/media/default-profile.png'">
+                        <?php else: ?>
+                            <div class="default-profile-photo">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="photo-upload">
+                        <label for="profile-photo-input" class="upload-btn">
+                            <i class="fas fa-camera"></i> Change Photo
+                        </label>
+                        <input type="file" id="profile-photo-input" name="profile_photo" accept="image/*" style="display: none;">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" value="<?php echo htmlspecialchars($user['username']); ?>" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($user['name'] ?? ''); ?>" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>">
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea id="address" name="address"><?php echo htmlspecialchars($user['address'] ?? ''); ?></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="save-btn">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+    
+    <script>
+        // Preview profile photo before upload
+        document.getElementById('profile-photo-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const profilePhotoContainer = document.querySelector('.profile-photo-container');
+                    
+                    // Remove default icon if it exists
+                    const defaultPhoto = profilePhotoContainer.querySelector('.default-profile-photo');
+                    if (defaultPhoto) {
+                        defaultPhoto.remove();
+                    }
+                    
+                    // Remove existing image if it exists
+                    const existingImg = profilePhotoContainer.querySelector('img');
+                    if (existingImg) {
+                        existingImg.remove();
+                    }
+                    
+                    // Create new image element
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    img.className = 'profile-photo';
+                    profilePhotoContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 </body>
 </html>
