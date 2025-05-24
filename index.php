@@ -35,7 +35,6 @@
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
                 </div>
-
             </div>
         </nav>
     </header>
@@ -268,13 +267,6 @@
     } else {
         ?>
         <div class="container">
-            <div class="search-container">
-                <input type="text" id="search" placeholder="Search for food or restaurant...">
-                <button onclick="searchFood()"><i class="fas fa-search"></i> Search</button>
-            </div>
-            
-            <div id="search-results" class="search-results"></div>
-            
             <div class="restaurants-container">
                 <div class="section-title">
                     <h2>All Restaurants</h2>
@@ -491,67 +483,6 @@
             }
         });
 
-        function searchFood() {
-            const query = document.getElementById('search').value.trim();
-            if (query === '') {
-                document.getElementById('search-results').innerHTML = '';
-                return;
-            }
-            
-            fetch(`get_food_search.php?query=${encodeURIComponent(query)}`)
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.json();
-                })
-                .then(data => {
-                    const resultsContainer = document.getElementById('search-results');
-                    resultsContainer.innerHTML = '';
-                    
-                    if (data.length === 0) {
-                        resultsContainer.innerHTML = '<div class="no-results"><i class="fas fa-utensils"></i> No results found for your search.</div>';
-                        return;
-                    }
-                    
-                    const resultsList = document.createElement('div');
-                    resultsList.className = 'food-results';
-                    
-                    data.forEach(item => {
-                        const itemImageUrl = item.image_path ? 
-                            (item.image_path.startsWith('http') ? item.image_path : '/' + item.image_path) : 
-                            '/static/media/default-food.jpg';
-                        
-                        const resultItem = document.createElement('div');
-                        resultItem.className = 'food-item';
-                        resultItem.innerHTML = `
-                            <div class="food-image">
-                                <img src="${itemImageUrl}" alt="${item.name}" onerror="this.onerror=null;this.src='/static/media/default-food.jpg'">
-                            </div>
-                            <div class="food-details">
-                                <h3>${item.name}</h3>
-                                <p class="food-description">${item.description}</p>
-                                <p class="food-price"><strong>Price:</strong> $${item.price.toFixed(2)}</p>
-                                <p class="food-restaurant"><i class="fas fa-store"></i> ${item.restaurant_name}</p>
-                                <a href="index.php?restaurant_id=${item.restaurant_id}" class="order-btn"><i class="fas fa-shopping-cart"></i> Order Now</a>
-                            </div>
-                        `;
-                        resultsList.appendChild(resultItem);
-                    });
-                    
-                    resultsContainer.appendChild(resultsList);
-                })
-                .catch(error => {
-                    console.error('Search error:', error);
-                    document.getElementById('search-results').innerHTML = 
-                        '<div class="error-message"><i class="fas fa-exclamation-triangle"></i> Error loading search results</div>';
-                });
-        }
-        
-        document.getElementById('search').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchFood();
-            }
-        });
-
         function toggleProfileDropdown() {
             document.getElementById('profile-dropdown').classList.toggle('show');
         }
@@ -568,7 +499,6 @@
                 }
             }
         }
-
     </script>
 </body>
 </html>

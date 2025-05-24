@@ -18,7 +18,6 @@
             <a href="cooking_video.html">Cooking Videos</a>
             <a href="about.html">About</a>
             <a href="contact.html">Contact</a>
-            <button class="logout-btn" onclick="window.location.href='logout.php'">Logout</button>
         </nav>
     </header>
 
