@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Management System</title>
-    <link rel="stylesheet" href="static/css/index.css">
+    <link rel="stylesheet" href="static/css/Index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="static/css/cart.css">
 </head>
@@ -17,7 +17,7 @@
             <a href="cooking_video.html">Cooking Videos</a>
             <a href="about.html">About</a>
             <a href="contact.html">Contact</a>
-            
+            <a href="reviews.php">Reviews</a>
             <!-- Profile Dropdown -->
             <div class="profile-dropdown">
                 <div class="profile-icon" onclick="toggleProfileDropdown()">

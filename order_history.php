@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order History</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="static/css/indexs.css">
     <link rel="stylesheet" href="static/css/order_history.css">
 </head>
@@ -56,8 +57,11 @@
                 echo '<div class="order-card">';
                 echo '<div class="order-header">';
                 echo '<div>';
-                echo '<h3>Order #' . $order['id'] . '</h3>';
-                echo '<p><i class="fas fa-store"></i> ' . htmlspecialchars($order['restaurant_name']) . '</p>';
+                echo '<p style="display: inline-block; background: #5f27cd; color: white; padding: 6px 12px; border-radius: 20px; font-size: 14px;">
+                       <i class="fas fa-store" style="margin-right: 6px;"></i>
+                       ' . htmlspecialchars($order['restaurant_name']) . '
+                     </p>';
+
                 echo '</div>';
                 echo '<div>';
                 echo '<p><i class="fas fa-calendar-alt"></i> ' . $order['order_date'] . '</p>';
@@ -65,7 +69,11 @@
                 echo '</div>';
                 echo '</div>';
                 
-                echo '<p><i class="fas fa-map-marker-alt"></i> ' . htmlspecialchars($order['delivery_address']) . '</p>';
+                echo '<p style="display: flex; align-items: center; gap: 8px; color: #555; margin: 12px 0;">
+                       <i class="fas fa-map-marker-alt" style="color: #e74c3c;"></i>
+                       <span>' . htmlspecialchars($order['delivery_address'] ?? 'Address not specified') . '</span>
+                     </p>';
+                     
                 if (!empty($order['special_instructions'])) {
                     echo '<p><i class="fas fa-sticky-note"></i> ' . htmlspecialchars($order['special_instructions']) . '</p>';
                 }
