@@ -972,3 +972,40 @@ textarea {
         font-size: 1.5rem;
     }
 }
+
+
+
+
+/* Auth buttons styles */
+.auth-buttons {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.login-btn, .signup-btn {
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.login-btn {
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.login-btn:hover {
+    background-color: #f5f5f5;
+}
+
+.signup-btn {
+    background-color: #5f27cd;
+    color: white;
+    border: 1px solid #5f27cd;
+}
+
+.signup-btn:hover {
+    background-color: #4a1da3;
+}

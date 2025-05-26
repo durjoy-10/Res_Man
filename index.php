@@ -18,24 +18,29 @@
             <a href="about.html">About</a>
             <a href="contact.html">Contact</a>
             <a href="reviews.php">Reviews</a>
-            <!-- Profile Dropdown -->
-            <div class="profile-dropdown">
-                <div class="profile-icon" onclick="toggleProfileDropdown()">
-                    <i class="fas fa-user-circle"></i>
-                </div>
-                <div class="dropdown-content" id="profile-dropdown">
-                    <div class="dropdown-header">
-                        <h4><?php echo htmlspecialchars($user['name']); ?></h4>
-                        <p><?php echo htmlspecialchars($user['email']); ?></p>
+            <?php if (is_logged_in()): ?>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown">
+                    <div class="profile-icon" onclick="toggleProfileDropdown()">
+                        <i class="fas fa-user-circle"></i>
                     </div>
-                    <a href="profile.php"><i class="fas fa-user"></i> My Profile</a>
-                    <a href="change_password.php"><i class="fas fa-key"></i> Change Password</a>
-                    <a href="order_history.php"><i class="fas fa-history"></i> Order History</a>
-                    <button class="logout-btn" onclick="window.location.href='logout.php'">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
+                    <div class="dropdown-content" id="profile-dropdown">
+                        <div class="dropdown-header">
+                            <h4><?php echo htmlspecialchars($user['name']); ?></h4>
+                            <p><?php echo htmlspecialchars($user['email']); ?></p>
+                        </div>
+                        <a href="profile.php"><i class="fas fa-user"></i> My Profile</a>
+                        <a href="change_password.php"><i class="fas fa-key"></i> Change Password</a>
+                        <a href="order_history.php"><i class="fas fa-history"></i> Order History</a>
+                        <button class="logout-btn" onclick="window.location.href='logout.php'">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
                 </div>
-            </div>
+            <?php else: ?>
+                    <a href="login.html" class="login-btn">Login</a>
+                    <a href="signup.html" class="signup-btn">Sign Up</a>
+            <?php endif; ?>
         </nav>
     </header>
 
@@ -315,23 +320,26 @@
             updateCartDisplay();
         }
         
+        // Update addToCart function to set redirect URL
         function addToCart(itemId, itemName, itemPrice) {
-            // Check if item already in cart
-            const existingItem = cart.find(item => item.id === itemId);
-            
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({
-                    id: itemId,
-                    name: itemName,
-                    price: itemPrice,
-                    quantity: 1
+            <?php if (!is_logged_in()): ?>
+                // Store current URL to redirect back after login
+                fetch('set_login_redirect.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'redirect=' + encodeURIComponent(window.location.href)
                 });
-            }
+                
+                if (confirm('You need to login to add items to cart. Would you like to login now?')) {
+                    window.location.href = 'login.html';
+                }
+                return;
+            <?php endif; ?>
             
-            updateCartDisplay();
-            toggleCart(); // Show cart when adding an item
+            // Rest of the function remains the same
+            // ...
         }
         
         function updateCartItem(itemId, change) {
@@ -392,6 +400,13 @@
         }
         
         function showCheckoutForm() {
+            <?php if (!is_logged_in()): ?>
+                if (confirm('You need to login to checkout. Would you like to login now?')) {
+                    window.location.href = 'login.html';
+                }
+                return;
+            <?php endif; ?>
+            
             if (cart.length === 0) {
                 alert('Your cart is empty!');
                 return;
