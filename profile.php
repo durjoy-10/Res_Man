@@ -62,12 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <?php require 'header.php'; ?>
-    
     <div class="container">
         <div class="profile-container">
             <h2>My Profile</h2>
-            
             <?php if (isset($success_message)): ?>
                 <div class="alert alert-success"><?php echo htmlspecialchars($success_message); ?></div>
             <?php endif; ?>

@@ -29,8 +29,8 @@ if ($existing_review) {
 }
 
 try {
-    $stmt = $pdo->prepare("INSERT INTO restaurant_reviews (restaurant_id, user_id, rating, review_text) 
-                          VALUES (?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO restaurant_reviews (restaurant_id, user_id, rating, review_text)   
+                          VALUES (?, ?, ?, ?)"); //prepared statement
     $stmt->execute([$restaurant_id, $_SESSION['user_id'], $rating, $review_text]);
     
     echo json_encode(['success' => true, 'message' => 'Review submitted successfully']);

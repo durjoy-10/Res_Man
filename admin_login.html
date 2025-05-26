@@ -18,19 +18,19 @@
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        document.getElementById('loginForm').addEventListener('submit', function(e) {    // ফর্ম সাবমিট করার সময় একটি ফাংশন কল হবে।
+            e.preventDefault(); //সাবমিট করলে পেজ রিফ্রেশ না হয়, তাই এটা ব্যবহার করা হয়।
             
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value;  
+            const password = document.getElementById('password').value;  //ইউজার ইনপুট থেকে ইউজারনেম ও পাসওয়ার্ড সংগ্রহ করা হচ্ছে।
             const errorElement = document.getElementById('error');
             
             errorElement.textContent = '';
             
-            fetch('admin_login.php', {
+            fetch('admin_login.php', {  //JavaScript দিয়ে সার্ভারে POST অনুরোধ পাঠানো হচ্ছে admin_login.php ফাইলে।
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'   //ডেটা JSON আকারে পাঠানো হচ্ছে।
                 },
                 body: JSON.stringify({
                     username: username,

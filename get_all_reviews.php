@@ -3,6 +3,7 @@ require 'db_connection.php';
 
 header('Content-Type: application/json');
 
+
 $query = "SELECT rr.*, u.name as user_name, r.name as restaurant_name 
           FROM restaurant_reviews rr
           JOIN users u ON rr.user_id = u.id
