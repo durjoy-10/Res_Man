@@ -38,8 +38,10 @@
                     </div>
                 </div>
             <?php else: ?>
+                <div class="auth-buttons">
                     <a href="login.html" class="login-btn">Login</a>
                     <a href="signup.html" class="signup-btn">Sign Up</a>
+                </div>
             <?php endif; ?>
         </nav>
     </header>
@@ -320,26 +322,30 @@
             updateCartDisplay();
         }
         
-        // Update addToCart function to set redirect URL
         function addToCart(itemId, itemName, itemPrice) {
             <?php if (!is_logged_in()): ?>
-                // Store current URL to redirect back after login
-                fetch('set_login_redirect.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: 'redirect=' + encodeURIComponent(window.location.href)
-                });
-                
                 if (confirm('You need to login to add items to cart. Would you like to login now?')) {
                     window.location.href = 'login.html';
                 }
                 return;
             <?php endif; ?>
             
-            // Rest of the function remains the same
-            // ...
+            // Check if item already in cart
+            const existingItem = cart.find(item => item.id === itemId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: itemId,
+                    name: itemName,
+                    price: itemPrice,
+                    quantity: 1
+                });
+            }
+            
+            updateCartDisplay();
+            toggleCart(); // Show cart when adding an item
         }
         
         function updateCartItem(itemId, change) {
