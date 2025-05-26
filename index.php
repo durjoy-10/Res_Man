@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Management System</title>
-    <link rel="stylesheet" href="static/css/Index.css">
+    <link rel="stylesheet" href="static/css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="static/css/cart.css">
     <style>
@@ -55,10 +55,8 @@
                     </div>
                 </div>
             <?php else: ?>
-                <div class="auth-buttons">
                     <a href="login.html" class="login-btn">Login</a>
                     <a href="signup.html" class="signup-btn">Sign Up</a>
-                </div>
             <?php endif; ?>
         </nav>
     </header>

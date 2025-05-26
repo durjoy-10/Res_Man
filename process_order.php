@@ -67,7 +67,7 @@ try {
     }
 
     // Step 4: Create the order with payment details
-    $status = ($paymentMethod === 'cash_on_delivery') ? 'pending' : 'payment_pending';
+    $status = 'pending'; // Always set to 'pending' for new orders
     $stmt = $pdo->prepare("INSERT INTO orders (user_id, restaurant_id, restaurant_name, total_amount, status, delivery_address, special_instructions, payment_method, payment_number, transaction_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $totalAmount = array_sum(array_map(function($item) {
         return $item['price'] * $item['quantity'];
