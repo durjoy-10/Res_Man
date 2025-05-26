@@ -4,8 +4,21 @@ require_once 'db_connection.php';
 header('Content-Type: application/json');
 
 try {
-    $stmt = $pdo->query("SELECT * FROM restaurants");
-    $restaurants = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $restaurantId = isset($_GET['id']) ? (int)$_GET['id'] : null;
+
+    if ($restaurantId) {
+        $stmt = $pdo->prepare("SELECT * FROM restaurants WHERE id = ?");
+        $stmt->execute([$restaurantId]);
+        $restaurants = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (empty($restaurants)) {
+            echo json_encode(['success' => false, 'message' => 'Restaurant not found']);
+            exit;
+        }
+    } else {
+        $stmt = $pdo->query("SELECT * FROM restaurants");
+        $restaurants = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     
     // Convert image paths to web-accessible URLs
     foreach ($restaurants as &$restaurant) {
@@ -16,9 +29,11 @@ try {
         }
     }
     
-    echo json_encode($restaurants);
+    echo json_encode(['success' => true, 'data' => $restaurants]);
 } catch (PDOException $e) {
-    echo json_encode(['error' => $e->getMessage()]);
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+    exit;
 }
 
 /**

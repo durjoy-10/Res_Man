@@ -242,10 +242,25 @@
                             echo '<p>' . htmlspecialchars($item['description']) . '</p>';
                             echo '<p class="menu-item-price">$' . number_format($item['price'], 2) . '</p>';
                             
+                            // Display stock
+                            echo '<p class="menu-item-stock">';
+                            if ($item['stock'] > 0) {
+                                echo '<i class="fas fa-box"></i> In Stock: ' . $item['stock'];
+                            } else {
+                                echo '<i class="fas fa-exclamation-circle"></i> Items out of stock';
+                            }
+                            echo '</p>';
+                            
                             // Add to cart button
-                            echo '<button class="add-to-cart-btn" onclick="addToCart(' . $item['id'] . ', \'' . htmlspecialchars(addslashes($item['name'])) . '\', ' . $item['price'] . ')">';
-                            echo '<i class="fas fa-plus"></i> Add to Order';
-                            echo '</button>';
+                            if ($item['stock'] > 0) {
+                                echo '<button class="add-to-cart-btn" onclick="addToCart(' . $item['id'] . ', \'' . htmlspecialchars(addslashes($item['name'])) . '\', ' . $item['price'] . ', ' . $item['stock'] . ')">';
+                                echo '<i class="fas fa-plus"></i> Add to Order';
+                                echo '</button>';
+                            } else {
+                                echo '<button class="add-to-cart-btn disabled" disabled>';
+                                echo '<i class="fas fa-ban"></i> Out of Stock';
+                                echo '</button>';
+                            }
                             
                             echo '</div>';
                             echo '</div>';
@@ -315,14 +330,32 @@
         // Cart functionality
         let cart = [];
         const restaurantId = document.getElementById('restaurant-id') ? document.getElementById('restaurant-id').value : null;
-        
+        let stockData = {};
+
+        // Fetch stock data for all items
+        function fetchStockData() {
+            fetch('get_menu_items_stock.php?restaurant_id=' + restaurantId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        stockData = data.data.reduce((acc, item) => {
+                            acc[item.id] = item.stock;
+                            return acc;
+                        }, {});
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching stock data:', error);
+                });
+        }
+
         function toggleCart() {
             const cartContainer = document.getElementById('cart-container');
             cartContainer.style.display = cartContainer.style.display === 'block' ? 'none' : 'block';
             updateCartDisplay();
         }
         
-        function addToCart(itemId, itemName, itemPrice) {
+        function addToCart(itemId, itemName, itemPrice, stock) {
             <?php if (!is_logged_in()): ?>
                 if (confirm('You need to login to add items to cart. Would you like to login now?')) {
                     window.location.href = 'login.html';
@@ -330,10 +363,22 @@
                 return;
             <?php endif; ?>
             
+            // Check stock from stockData
+            const currentStock = stockData[itemId] !== undefined ? stockData[itemId] : stock;
+            if (currentStock <= 0) {
+                alert('This item is out of stock!');
+                return;
+            }
+
             // Check if item already in cart
             const existingItem = cart.find(item => item.id === itemId);
             
             if (existingItem) {
+                // Check if adding more exceeds stock
+                if (existingItem.quantity + 1 > currentStock) {
+                    alert('Cannot add more of this item. Stock limit reached!');
+                    return;
+                }
                 existingItem.quantity += 1;
             } else {
                 cart.push({
@@ -352,7 +397,15 @@
             const itemIndex = cart.findIndex(item => item.id === itemId);
             
             if (itemIndex !== -1) {
-                cart[itemIndex].quantity += change;
+                const newQuantity = cart[itemIndex].quantity + change;
+                const currentStock = stockData[itemId] !== undefined ? stockData[itemId] : 0;
+
+                if (newQuantity > currentStock) {
+                    alert('Cannot add more of this item. Stock limit reached!');
+                    return;
+                }
+
+                cart[itemIndex].quantity = newQuantity;
                 
                 if (cart[itemIndex].quantity <= 0) {
                     cart.splice(itemIndex, 1);
@@ -418,6 +471,22 @@
                 return;
             }
             
+            // Check stock before proceeding to checkout
+            let stockCheckPassed = true;
+            let stockCheckMessage = '';
+            cart.forEach(item => {
+                const currentStock = stockData[item.id] !== undefined ? stockData[item.id] : 0;
+                if (item.quantity > currentStock) {
+                    stockCheckPassed = false;
+                    stockCheckMessage += `${item.name} (Requested: ${item.quantity}, Available: ${currentStock})\n`;
+                }
+            });
+
+            if (!stockCheckPassed) {
+                alert('Cannot proceed to checkout due to insufficient stock:\n' + stockCheckMessage);
+                return;
+            }
+
             document.getElementById('checkout-form-container').style.display = 'flex';
             document.getElementById('checkout-restaurant-id').value = restaurantId;
         }
@@ -437,6 +506,9 @@
                 delivery_address: formData.get('delivery_address'),
                 special_instructions: formData.get('special_instructions')
             };
+
+            // Log the order data for debugging
+            console.log('Order data being sent:', orderData);
             
             fetch('process_order.php', {
                 method: 'POST',
@@ -447,11 +519,20 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log('Order response:', data);
                 if (data.success) {
                     alert('Order placed successfully! Order ID: ' + data.order_id);
+                    // Update stock locally
+                    cart.forEach(item => {
+                        if (stockData[item.id] !== undefined) {
+                            stockData[item.id] -= item.quantity;
+                        }
+                    });
                     cart = [];
                     updateCartDisplay();
                     hideCheckoutForm();
+                    // Reload the page to reflect updated stock
+                    window.location.reload();
                 } else {
                     throw new Error(data.message || 'Failed to place order');
                 }
@@ -477,6 +558,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Fetch stock data on page load if viewing a restaurant
+            if (restaurantId) {
+                fetchStockData();
+            }
+
             // Image error handling
             document.querySelectorAll('img').forEach(img => {
                 img.onerror = function() {
