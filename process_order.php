@@ -21,6 +21,9 @@ $restaurantId = (int)$input['restaurant_id'];
 $items = $input['items'];
 $deliveryAddress = $input['delivery_address'] ?? '';
 $specialInstructions = $input['special_instructions'] ?? '';
+$paymentMethod = $input['payment_method'] ?? '';
+$paymentNumber = $input['payment_number'] ?? null;
+$transactionId = $input['transaction_id'] ?? null;
 $userId = $_SESSION['user_id'];
 
 try {
@@ -56,15 +59,23 @@ try {
         }
     }
 
-    // Step 3: Create the order with restaurant_name
-    $stmt = $pdo->prepare("INSERT INTO orders (user_id, restaurant_id, restaurant_name, total_amount, status, delivery_address, special_instructions) VALUES (?, ?, ?, ?, 'pending', ?, ?)");
+    // Step 3: Validate payment details
+    if ($paymentMethod === 'bkash' || $paymentMethod === 'nagad') {
+        if (!$paymentNumber || !$transactionId) {
+            throw new Exception("Payment number and transaction ID are required for $paymentMethod");
+        }
+    }
+
+    // Step 4: Create the order with payment details
+    $status = ($paymentMethod === 'cash_on_delivery') ? 'pending' : 'payment_pending';
+    $stmt = $pdo->prepare("INSERT INTO orders (user_id, restaurant_id, restaurant_name, total_amount, status, delivery_address, special_instructions, payment_method, payment_number, transaction_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $totalAmount = array_sum(array_map(function($item) {
         return $item['price'] * $item['quantity'];
     }, $items));
-    $stmt->execute([$userId, $restaurantId, $restaurantName, $totalAmount, $deliveryAddress, $specialInstructions]);
+    $stmt->execute([$userId, $restaurantId, $restaurantName, $totalAmount, $status, $deliveryAddress, $specialInstructions, $paymentMethod, $paymentNumber, $transactionId]);
     $orderId = $pdo->lastInsertId();
 
-    // Step 4: Insert order items and update stock
+    // Step 5: Insert order items and update stock
     $stmt = $pdo->prepare("INSERT INTO order_items (order_id, menu_item_id, quantity, price) VALUES (?, ?, ?, ?)");
     $updateStmt = $pdo->prepare("UPDATE menu_items SET stock = stock - ? WHERE id = ?");
 

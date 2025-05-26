@@ -8,6 +8,23 @@
     <link rel="stylesheet" href="static/css/Index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="static/css/cart.css">
+    <style>
+        .payment-options {
+            margin-top: 10px;
+        }
+        .payment-fields {
+            display: none;
+            margin-top: 10px;
+        }
+        .payment-fields.active {
+            display: block;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -80,6 +97,20 @@
                 <div class="form-group">
                     <label>Special Instructions (optional):</label>
                     <textarea name="special_instructions" style="width:100%; padding:10px;"></textarea>
+                </div>
+                <div class="form-group payment-options">
+                    <label>Payment Method:</label>
+                    <select name="payment_method" id="payment-method" onchange="togglePaymentFields()">
+                        <option value="cash_on_delivery">Cash on Delivery</option>
+                        <option value="bkash">bKash</option>
+                        <option value="nagad">Nagad</option>
+                    </select>
+                </div>
+                <div class="form-group payment-fields" id="payment-fields">
+                    <label>Payment Number:</label>
+                    <input type="text" name="payment_number" placeholder="Enter payment number" required>
+                    <label>Transaction ID:</label>
+                    <input type="text" name="transaction_id" placeholder="Enter transaction ID" required>
                 </div>
                 <div style="display:flex; justify-content:space-between; margin-top:20px;">
                     <button type="button" onclick="hideCheckoutForm()" style="padding:10px 20px; background:#ccc; border:none; border-radius:5px; cursor:pointer;">Cancel</button>
@@ -489,12 +520,31 @@
 
             document.getElementById('checkout-form-container').style.display = 'flex';
             document.getElementById('checkout-restaurant-id').value = restaurantId;
+            // Reset payment fields visibility
+            togglePaymentFields();
         }
         
         function hideCheckoutForm() {
             document.getElementById('checkout-form-container').style.display = 'none';
         }
         
+        function togglePaymentFields() {
+            const paymentMethod = document.getElementById('payment-method').value;
+            const paymentFields = document.getElementById('payment-fields');
+            const paymentNumber = document.querySelector('#payment-fields input[name="payment_number"]');
+            const transactionId = document.querySelector('#payment-fields input[name="transaction_id"]');
+
+            if (paymentMethod === 'cash_on_delivery') {
+                paymentFields.classList.remove('active');
+                paymentNumber.removeAttribute('required');
+                transactionId.removeAttribute('required');
+            } else {
+                paymentFields.classList.add('active');
+                paymentNumber.setAttribute('required', 'required');
+                transactionId.setAttribute('required', 'required');
+            }
+        }
+
         // Handle checkout form submission
         document.getElementById('checkout-form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -504,7 +554,10 @@
                 restaurant_id: restaurantId,
                 items: cart,
                 delivery_address: formData.get('delivery_address'),
-                special_instructions: formData.get('special_instructions')
+                special_instructions: formData.get('special_instructions'),
+                payment_method: formData.get('payment_method'),
+                payment_number: formData.get('payment_method') === 'cash_on_delivery' ? null : formData.get('payment_number'),
+                transaction_id: formData.get('payment_method') === 'cash_on_delivery' ? null : formData.get('transaction_id')
             };
 
             // Log the order data for debugging

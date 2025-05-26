@@ -123,7 +123,7 @@
         <div id="manage-tab" class="tab-content">
             <h2><i class="fas fa-edit"></i> Manage Restaurants</h2>
             <div class="restaurant-list" id="restaurants-list">
-                <!-- Restaurants will Search for restaurants with id 1 in the database using SQL SELECT query be loaded here -->
+                <!-- Restaurants will be loaded here -->
             </div>
         </div>
         
@@ -567,7 +567,7 @@
                                     <p><i class="fas fa-envelope"></i> ${user.email}</p>
                                 </div>
                                 <div class="user-actions">
-                                    < quieres editar el usuario? <button class="btn btn-danger" onclick="deleteUser(${user.id}, '${user.username}')">
+                                    <button class="btn btn-danger" onclick="deleteUser(${user.id}, '${user.username}')">
                                         <i class="fas fa-trash"></i> Delete
                                     </button>
                                 </div>
@@ -789,7 +789,7 @@
                             </div>
                             
                             <div class="order-details">
-                                <p><i class="fas fa-map-marker-alt"></i> ${order.delivery_address}</p>
+                                <p><i class="fas fa-map-marker-alt"></i> Delivery Address: ${order.delivery_address || 'N/A'}</p>
                                 ${order.special_instructions ? `<p><i class="fas fa-sticky-note"></i> ${order.special_instructions}</p>` : ''}
                                 
                                 <div class="order-items">
@@ -803,6 +803,9 @@
                                 <div class="order-total">
                                     <strong>Total:</strong> $${parseFloat(order.total_amount).toFixed(2)}
                                 </div>
+                                <p><i class="fas fa-credit-card"></i> Payment Method: ${order.payment_method ? order.payment_method.replace('_', ' ').replace(/\b\w/g, char => char.toUpperCase()) : 'N/A'}</p>
+                                <p><i class="fas fa-phone"></i> Payment Number: ${order.payment_number || 'N/A'}</p>
+                                <p><i class="fas fa-exchange-alt"></i> Transaction ID: ${order.transaction_id || 'N/A'}</p>
                             </div>
                             
                             <div class="order-actions">

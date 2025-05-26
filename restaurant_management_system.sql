@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: May 25, 2025 at 07:26 PM
+-- Generation Time: May 26, 2025 at 07:11 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -61,12 +61,9 @@ CREATE TABLE `menu_categories` (
 --
 
 INSERT INTO `menu_categories` (`id`, `restaurant_id`, `name`, `description`) VALUES
-(30, 24, 'Appetizer', ''),
-(31, 24, 'Tacos', ''),
-(32, 24, 'Wings & Lolopop\'s', ''),
-(35, 27, 'Bangla Cuisine Add On', ''),
-(36, 27, 'Thai Chinese Cuisine Rice', ''),
-(37, 27, 'Mutton', '');
+(44, 28, 'Appetizer', ''),
+(45, 28, 'Tacos', ''),
+(46, 28, 'Wings & Lolipops', '');
 
 -- --------------------------------------------------------
 
@@ -80,54 +77,39 @@ CREATE TABLE `menu_items` (
   `name` varchar(255) NOT NULL,
   `description` text DEFAULT NULL,
   `price` decimal(10,2) NOT NULL,
-  `image_path` varchar(255) DEFAULT NULL
+  `image_path` varchar(255) DEFAULT NULL,
+  `stock` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `menu_items`
 --
 
-INSERT INTO `menu_items` (`id`, `category_id`, `name`, `description`, `price`, `image_path`) VALUES
-(107, 30, 'Fried Wonton', '1 pcs', 30.00, 'uploads/menu_items/item_682c05ea95062.jpeg'),
-(108, 30, 'Thai Fried Chiken ', '1 pcs', 90.00, 'uploads/menu_items/item_682c05ea95290.jpeg'),
-(109, 30, 'Crispy Chiken', '1 pcs', 100.00, 'uploads/menu_items/item_682c05ea9546e.jpeg'),
-(110, 30, 'French Fries', '', 130.00, 'uploads/menu_items/item_682c05ea95f23.jpeg'),
-(111, 30, 'Wedges', '', 130.00, 'uploads/menu_items/item_682c05ea9612f.jpeg'),
-(112, 30, 'Spicy Chiken', '10 pcs', 170.00, 'uploads/menu_items/item_682c05ea96318.jpeg'),
-(113, 30, 'Chiken Strips', '6 pcs', 180.00, 'uploads/menu_items/item_682c05ea964ec.jpeg'),
-(114, 30, 'Chiken Meatball', '6 pcs', 200.00, 'uploads/menu_items/item_682c05ea966ef.jpeg'),
-(115, 30, 'Chiken Popcorn', '', 200.00, 'uploads/menu_items/item_682c05ea968d1.jpeg'),
-(116, 30, 'Cheesy Chiken ', '4 pcs', 200.00, 'uploads/menu_items/item_682c05ea96aa4.jpeg'),
-(117, 30, 'Chiken Basket', '6 pcs', 250.00, 'uploads/menu_items/item_682c05ea96c7a.jpeg'),
-(118, 30, 'Chiken Mushroom Overload', '', 240.00, 'uploads/menu_items/item_682c05ea96e4a.jpeg'),
-(119, 30, 'Chiken Cheese Mushroom overload', '', 280.00, 'uploads/menu_items/item_682c05ea97021.jpeg'),
-(120, 30, 'Octopus', '', 350.00, 'uploads/menu_items/item_682c05ea971ee.jpeg'),
-(121, 31, 'Normal Tacos', '', 150.00, 'uploads/menu_items/item_682c05ea9751d.jpeg'),
-(122, 31, 'BBQ Tacos', '', 160.00, 'uploads/menu_items/item_682c05ea97735.jpeg'),
-(123, 31, 'Naga Tacos', '', 160.00, 'uploads/menu_items/item_682c05ea9790c.jpeg'),
-(124, 32, 'Naga Wings', '', 200.00, 'uploads/menu_items/item_682c05ea97bef.jpeg'),
-(125, 32, 'Honey Wings', '', 200.00, 'uploads/menu_items/item_682c05ea97dc3.jpeg'),
-(126, 32, 'Buffalo Wings', '', 200.00, NULL),
-(127, 32, 'Crispy Wings', '', 200.00, NULL),
-(128, 32, 'BBQ Wings', '', 200.00, NULL),
-(129, 32, 'Fried Chiken Lolipop', '', 200.00, NULL),
-(130, 32, 'BBQ Chiken Lolipop', '', 200.00, NULL),
-(131, 32, 'Naga Chiken Lolipop', '', 200.00, NULL),
-(134, 35, 'Plain Rice', '', 30.00, 'uploads/menu_items/item_683144c2e01c7.jpeg'),
-(135, 35, 'Plain Polao', '', 60.00, 'uploads/menu_items/item_683144c2e0514.jpeg'),
-(136, 35, 'Fish Vorta', '', 70.00, 'uploads/menu_items/item_683144c2e06e1.jpeg'),
-(137, 35, 'Chiken Achari', '', 150.00, 'uploads/menu_items/item_683144c2e08a7.jpeg'),
-(138, 35, 'Mutton Razala', '2 pcs', 250.00, 'uploads/menu_items/item_683144c2e09f3.jpeg'),
-(139, 36, 'Chiken Fried Rice', '', 160.00, 'uploads/menu_items/item_683144c2e2537.jpeg'),
-(140, 36, 'Egg Fried Rice', '1:1', 120.00, 'uploads/menu_items/item_683144c2e2c30.jpeg'),
-(141, 36, 'Hot Plate Special', '', 250.00, 'uploads/menu_items/item_683144c2e2e27.jpeg'),
-(142, 36, 'Indonesian Fried Rice', '', 400.00, 'uploads/menu_items/item_683144c2e2fd3.jpeg'),
-(143, 36, 'Mixed Fried Rice ', '1:3', 370.00, 'uploads/menu_items/item_683144c2e317f.jpeg'),
-(144, 36, 'Prawn Fried Rice', '1:3', 300.00, 'uploads/menu_items/item_683144c2e332d.jpeg'),
-(145, 36, 'Vegetable Fried Rice ', '1:1', 120.00, 'uploads/menu_items/item_683144c2e34bc.jpeg'),
-(146, 37, 'Mutton Boti Kabab', '', 250.00, 'uploads/menu_items/item_683144c2e36bf.jpeg'),
-(147, 37, 'Mutton Seekh Kabab', '', 275.00, 'uploads/menu_items/item_683144c2e3801.jpeg'),
-(148, 37, 'Tawa Mutton Jhal Kabab', '', 250.00, 'uploads/menu_items/item_683144c2e395a.jpeg');
+INSERT INTO `menu_items` (`id`, `category_id`, `name`, `description`, `price`, `image_path`, `stock`) VALUES
+(166, 44, 'cheesy chiken', '', 220.00, 'uploads/menu_items/item_68349eb5b5b9a.jpeg', 30),
+(167, 44, 'Chiken Basket', '', 250.00, 'uploads/menu_items/item_68349eb5b5df2.jpeg', 35),
+(168, 44, 'Chiken Cheese Mushroom Overload', '', 270.00, 'uploads/menu_items/item_68349eb5b60d2.jpeg', 25),
+(169, 44, 'Chiken Meatball', '', 220.00, 'uploads/menu_items/item_68349eb5b61ca.jpeg', 30),
+(170, 44, 'Chiken Mushroom Overload', '', 200.00, 'uploads/menu_items/item_68349eb5b62bd.jpeg', 20),
+(171, 44, 'Chiken Popcorn', '', 180.00, 'uploads/menu_items/item_68349eb5b63a9.jpeg', 30),
+(172, 44, 'Chiken Strips', '', 230.00, 'uploads/menu_items/item_68349eb5b64a4.jpeg', 30),
+(173, 44, 'Crispy Chiken', '', 180.00, 'uploads/menu_items/item_68349eb5b6596.jpeg', 26),
+(174, 44, 'French Fries', '', 250.00, 'uploads/menu_items/item_68349eb5b662f.jpeg', 28),
+(175, 44, 'Octopus', '', 330.00, 'uploads/menu_items/item_68349eb5b66c6.jpeg', 32),
+(176, 44, 'Spicy Chiken', '', 190.00, 'uploads/menu_items/item_68349eb5b675e.jpeg', 29),
+(177, 44, 'Thai Fried Chiken', '', 250.00, 'uploads/menu_items/item_68349eb5b67f5.jpeg', 24),
+(178, 44, 'Wedges', '', 160.00, 'uploads/menu_items/item_68349eb5b688d.jpeg', 15),
+(179, 45, 'BBQ Tacos', '', 190.00, 'uploads/menu_items/item_68349eb5b6edb.jpeg', 32),
+(180, 45, 'Naga Tacos', '', 220.00, 'uploads/menu_items/item_68349eb5b7981.jpeg', 33),
+(181, 45, 'Tacos', '', 250.00, 'uploads/menu_items/item_68349eb5b7b11.jpeg', 22),
+(182, 46, 'BBQ Chiken Lolipop', '', 250.00, 'uploads/menu_items/item_68349eb5b7d49.jpeg', 22),
+(183, 46, 'BBQ Wings ', '', 220.00, 'uploads/menu_items/item_68349eb5b7e74.jpeg', 20),
+(184, 46, 'Buffalo Wings', '', 220.00, 'uploads/menu_items/item_68349eb5b7f7d.jpeg', 21),
+(185, 46, 'Crispy Wings', '', 220.00, NULL, 14),
+(186, 46, 'Fried Chiken Lolipop', '', 210.00, NULL, 33),
+(187, 46, 'Honey Wings', '', 250.00, NULL, 40),
+(188, 46, 'Naga Chiken Lolipop', '', 350.00, NULL, 7),
+(189, 46, 'Naga Wings', '', 300.00, NULL, 5);
 
 -- --------------------------------------------------------
 
@@ -147,7 +129,7 @@ CREATE TABLE `offers` (
 --
 
 INSERT INTO `offers` (`id`, `restaurant_id`, `description`, `valid_until`) VALUES
-(18, 27, '10% off on all the food items', '2025-05-30');
+(20, 28, '10% discount on Tacos', '2025-05-30');
 
 -- --------------------------------------------------------
 
@@ -166,22 +148,6 @@ CREATE TABLE `orders` (
   `status` enum('pending','processing','delivered','cancelled') DEFAULT 'pending',
   `total_amount` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `orders`
---
-
-INSERT INTO `orders` (`id`, `user_id`, `restaurant_id`, `restaurant_name`, `order_date`, `delivery_address`, `special_instructions`, `status`, `total_amount`) VALUES
-(1, 3, 24, '', '2025-05-23 12:48:48', 'Kalaskati,Barishal', 'Nothing', 'processing', 850.00),
-(2, 1, 24, 'Food King Restaurant', '2025-05-23 14:36:31', 'PSTU', 'Focus on Quality not Quantity', 'delivered', 1810.00),
-(3, 3, 24, 'Food King Restaurant', '2025-05-23 20:03:10', 'Shitlakhola,Barishal', '', 'pending', 360.00),
-(4, 3, 24, 'Food King Restaurant', '2025-05-23 20:06:34', 'Shitlakhola,Barishal', '', 'processing', 1950.00),
-(5, 2, 24, 'Food King Restaurant', '2025-05-24 03:25:49', 'Kalaskati', '', 'delivered', 260.00),
-(6, 2, 27, 'Hot Plate Restaurant', '2025-05-24 04:10:36', 'Pstu', '', 'processing', 1240.00),
-(8, 2, 27, 'Hot Plate Restaurant', '2025-05-24 11:08:29', 'Kalaskati', '', 'pending', 210.00),
-(9, 5, 27, 'Hot Plate Restaurant', '2025-05-24 13:17:13', 'PSTU', '', 'delivered', 860.00),
-(10, 5, 24, 'Food King Restaurant', '2025-05-24 13:19:23', 'PSTU', '', 'pending', 840.00),
-(11, 5, 27, 'Hot Plate Restaurant', '2025-05-24 13:50:57', 'Barishal', '', 'pending', 650.00);
 
 -- --------------------------------------------------------
 
@@ -218,60 +184,6 @@ CREATE TABLE `order_items` (
   `price` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `order_items`
---
-
-INSERT INTO `order_items` (`id`, `order_id`, `menu_item_id`, `quantity`, `price`) VALUES
-(1, 1, 107, 1, 30.00),
-(2, 1, 108, 1, 90.00),
-(3, 1, 109, 1, 100.00),
-(4, 1, 110, 1, 130.00),
-(5, 1, 111, 1, 130.00),
-(6, 1, 112, 1, 170.00),
-(7, 1, 115, 1, 200.00),
-(8, 2, 111, 1, 130.00),
-(9, 2, 113, 1, 180.00),
-(10, 2, 114, 1, 200.00),
-(11, 2, 115, 1, 200.00),
-(12, 2, 116, 1, 200.00),
-(13, 2, 117, 1, 250.00),
-(14, 2, 120, 1, 350.00),
-(15, 2, 121, 2, 150.00),
-(16, 3, 108, 1, 90.00),
-(17, 3, 109, 1, 100.00),
-(18, 3, 112, 1, 170.00),
-(19, 4, 108, 2, 90.00),
-(20, 4, 109, 1, 100.00),
-(21, 4, 112, 2, 170.00),
-(22, 4, 120, 3, 350.00),
-(23, 4, 119, 1, 280.00),
-(24, 5, 107, 1, 30.00),
-(25, 5, 109, 1, 100.00),
-(26, 5, 110, 1, 130.00),
-(27, 6, 135, 1, 60.00),
-(28, 6, 137, 1, 150.00),
-(29, 6, 143, 1, 370.00),
-(30, 6, 139, 1, 160.00),
-(31, 6, 148, 1, 250.00),
-(32, 6, 146, 1, 250.00),
-(33, 8, 134, 1, 30.00),
-(34, 8, 135, 1, 60.00),
-(35, 8, 145, 1, 120.00),
-(36, 9, 134, 1, 30.00),
-(37, 9, 135, 1, 60.00),
-(38, 9, 136, 1, 70.00),
-(39, 9, 142, 1, 400.00),
-(40, 9, 144, 1, 300.00),
-(41, 10, 113, 1, 180.00),
-(42, 10, 111, 1, 130.00),
-(43, 10, 110, 1, 130.00),
-(44, 10, 125, 1, 200.00),
-(45, 10, 126, 1, 200.00),
-(46, 11, 137, 1, 150.00),
-(47, 11, 146, 1, 250.00),
-(48, 11, 148, 1, 250.00);
-
 -- --------------------------------------------------------
 
 --
@@ -297,8 +209,7 @@ CREATE TABLE `restaurants` (
 --
 
 INSERT INTO `restaurants` (`id`, `name`, `description`, `owner_name`, `owner_email`, `owner_password`, `phone`, `address`, `image_path`, `created_at`, `updated_at`) VALUES
-(24, 'Food King Restaurant', 'Hello food lovers,\r\nWelcome to our food palace\r\nEnjoy our food in cheapest rate\r\nThank you.', 'Durjoy Das', 'durjoy15432@gmail.com', '$2y$10$Zo82UdyKt111FzGotLpJpepthtgyhJnvuHD2D/bgcH3inIQ6JiH.u', '01797373835', 'Bottola, Barishal', 'uploads/restaurants/restaurant_682c05ea71f39.jpg', '2025-05-20 04:32:42', '2025-05-20 04:32:42'),
-(27, 'Hot Plate Restaurant', 'HOT PLATE RESTAURANT is a specialized CHINESE & KABAB restaurant in the heart', 'Benoy', 'benoy15432@gmail.com', '$2y$10$LrQ3cf0Nd1vYdsKA2MaaQePN3UIu4qdYmIoMzDfqvlXIOXKxcJxsm', '01934014025', 'Jel Gate, Barishal', 'uploads/restaurants/restaurant_683144c2c93b1.jpg', '2025-05-24 04:02:10', '2025-05-24 04:02:10');
+(28, 'Food King', 'Hello food lovers, Welcome to our food palace Enjoy our food in cheapest rate Thank you.', 'MD Shuvo', 'shuvo009@gmail.com', '$2y$10$d5JWbHIz3cwi.Fmixp8Gu.na4rdl9lSTLAm6A.uRxF/MYMKudHj/6', '0154656564', 'Bottola, Barishal', 'uploads/restaurants/restaurant_68349eb5a844b.jpg', '2025-05-26 17:02:45', '2025-05-26 17:02:45');
 
 -- --------------------------------------------------------
 
@@ -330,17 +241,6 @@ CREATE TABLE `restaurant_reviews` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `restaurant_reviews`
---
-
-INSERT INTO `restaurant_reviews` (`id`, `restaurant_id`, `user_id`, `rating`, `review_text`, `created_at`, `updated_at`) VALUES
-(1, 24, 2, 5, 'Best foods in Barishal', '2025-05-24 02:49:36', '2025-05-24 02:49:36'),
-(2, 27, 2, 4, 'Better but can be best ', '2025-05-24 04:38:31', '2025-05-24 04:38:31'),
-(3, 24, 1, 5, 'Best foods in town', '2025-05-24 05:25:55', '2025-05-24 05:25:55'),
-(4, 27, 1, 4, 'Overall better.', '2025-05-24 05:26:27', '2025-05-24 05:26:27'),
-(5, 24, 5, 5, 'Best ', '2025-05-24 13:28:47', '2025-05-24 13:28:47');
 
 -- --------------------------------------------------------
 
@@ -428,21 +328,21 @@ ALTER TABLE `admins`
 --
 ALTER TABLE `menu_categories`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `restaurant_id` (`restaurant_id`);
+  ADD KEY `menu_categories_ibfk_1` (`restaurant_id`);
 
 --
 -- Indexes for table `menu_items`
 --
 ALTER TABLE `menu_items`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `category_id` (`category_id`);
+  ADD KEY `menu_items_ibfk_1` (`category_id`);
 
 --
 -- Indexes for table `offers`
 --
 ALTER TABLE `offers`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `restaurant_id` (`restaurant_id`);
+  ADD KEY `offers_ibfk_1` (`restaurant_id`);
 
 --
 -- Indexes for table `orders`
@@ -450,15 +350,15 @@ ALTER TABLE `offers`
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
-  ADD KEY `restaurant_id` (`restaurant_id`);
+  ADD KEY `orders_ibfk_2` (`restaurant_id`);
 
 --
 -- Indexes for table `order_items`
 --
 ALTER TABLE `order_items`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `order_id` (`order_id`),
-  ADD KEY `menu_item_id` (`menu_item_id`);
+  ADD KEY `menu_item_id` (`menu_item_id`),
+  ADD KEY `order_items_ibfk_1` (`order_id`);
 
 --
 -- Indexes for table `restaurants`
@@ -498,37 +398,37 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `menu_categories`
 --
 ALTER TABLE `menu_categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `menu_items`
 --
 ALTER TABLE `menu_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=149;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=190;
 
 --
 -- AUTO_INCREMENT for table `offers`
 --
 ALTER TABLE `offers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `restaurants`
 --
 ALTER TABLE `restaurants`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `restaurant_reviews`
@@ -540,7 +440,7 @@ ALTER TABLE `restaurant_reviews`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
@@ -569,14 +469,13 @@ ALTER TABLE `offers`
 --
 ALTER TABLE `orders`
   ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`id`);
+  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `order_items`
 --
 ALTER TABLE `order_items`
-  ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`),
-  ADD CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`menu_item_id`) REFERENCES `menu_items` (`id`);
+  ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `restaurant_reviews`

@@ -17,6 +17,9 @@ try {
                 o.special_instructions,
                 o.status,
                 o.total_amount,
+                o.payment_method,
+                o.payment_number,
+                o.transaction_id,
                 GROUP_CONCAT(
                     CONCAT(mi.name, ' (', oi.quantity, ' × $', oi.price, ')')
                     SEPARATOR ', '
