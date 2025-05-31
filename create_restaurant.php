@@ -8,15 +8,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-function generateRandomPassword($length = 12) {
-    $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
-    $password = '';
-    for ($i = 0; $i < $length; $i++) {
-        $password .= $chars[rand(0, strlen($chars) - 1)];
-    }
-    return $password;
-}
-
 function handleFileUpload($file, $uploadDir, $prefix) {
     // Define base directory
     $baseDir = '/opt/lampp/htdocs/restaurant_management/';
@@ -55,6 +46,11 @@ function handleFileUpload($file, $uploadDir, $prefix) {
 try {
     $pdo->beginTransaction();
 
+    // Validate password is provided
+    if (empty($_POST['owner_password'])) {
+        throw new Exception("Owner password is required");
+    }
+
     // Handle restaurant image
     $restaurantImagePath = null;
     if (!empty($_FILES['restaurant_image']['name'])) {
@@ -65,9 +61,8 @@ try {
         );
     }
 
-    // Create owner account
-    $ownerPassword = generateRandomPassword();
-    $hashedPassword = password_hash($ownerPassword, PASSWORD_BCRYPT);
+    // Hash the provided password
+    $hashedPassword = password_hash($_POST['owner_password'], PASSWORD_BCRYPT);
 
     // Insert restaurant
     $stmt = $pdo->prepare("INSERT INTO restaurants 
@@ -168,7 +163,6 @@ try {
         'success' => true,
         'restaurant_id' => $restaurantId,
         'owner_email' => $_POST['owner_email'],
-        'owner_password' => $ownerPassword,
         'image_url' => $restaurantImagePath ? convertPathToUrl($restaurantImagePath) : null
     ]);
 } catch (Exception $e) {

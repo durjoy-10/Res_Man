@@ -53,21 +53,32 @@ try {
         );
     }
 
-    // Update restaurant details
-    $stmt = $pdo->prepare("UPDATE restaurants 
-        SET name = ?, description = ?, owner_name = ?, owner_email = ?, phone = ?, address = ?, image_path = COALESCE(?, image_path)
-        WHERE id = ?");
-    
-    $stmt->execute([
+    // Handle owner password
+    $passwordUpdate = '';
+    $params = [
         $_POST['name'],
         $_POST['description'],
         $_POST['owner_name'],
         $_POST['owner_email'],
         $_POST['phone'],
         $_POST['address'],
-        $restaurantImagePath,
-        $restaurantId
-    ]);
+        $restaurantImagePath
+    ];
+
+    if (!empty($_POST['owner_password'])) {
+        $hashedPassword = password_hash($_POST['owner_password'], PASSWORD_BCRYPT);
+        $passwordUpdate = ', owner_password = ?';
+        $params[] = $hashedPassword;
+    }
+
+    $params[] = $restaurantId;
+
+    // Update restaurant details
+    $stmt = $pdo->prepare("UPDATE restaurants 
+        SET name = ?, description = ?, owner_name = ?, owner_email = ?, phone = ?, address = ?, image_path = COALESCE(?, image_path) $passwordUpdate
+        WHERE id = ?");
+    
+    $stmt->execute($params);
 
     // Delete existing categories, items, and offers
     $stmt = $pdo->prepare("DELETE FROM offers WHERE restaurant_id = ?");
