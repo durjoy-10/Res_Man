@@ -3,87 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant Owner Login</title>
-    <link rel="stylesheet" href="static/css/owner_login.css">
+    <title>Owner Login</title>
+    <link rel="stylesheet" href="static/css/owner_style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="login-container">
-        <div class="login-box">
-            <div class="login-header">
-                <img src="static/images/restaurant-logo.png" alt="Restaurant Logo" class="logo">
-                <h1>Restaurant Owner Login</h1>
+        <h2><i class="fas fa-user-lock"></i> Owner Login</h2>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="owner-email"><i class="fas fa-envelope"></i> Email:</label>
+                <input type="email" id="owner-email" name="owner_email" required>
             </div>
-            
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="email"><i class="fas fa-envelope"></i> Email</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password"><i class="fas fa-lock"></i> Password</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </button>
-                </div>
-                
-                <div id="error" class="error-message"></div>
-            </form>
-        </div>
+            <div class="form-group">
+                <label for="password"><i class="fas fa-lock"></i> Password:</label>
+                <input type="password" id="password" name="password" required minlength="8">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </div>
+        </form>
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorElement = document.getElementById('error');
-            
-            errorElement.textContent = '';
-            
+
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
             submitBtn.disabled = true;
-            
+
+            const formData = new FormData(this);
+
             fetch('owner_login.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                })
+                body: formData
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Store owner session info
                     localStorage.setItem('ownerLoggedIn', 'true');
-                    localStorage.setItem('ownerId', data.owner_id);
+                    localStorage.setItem('ownerEmail', formData.get('owner_email'));
                     localStorage.setItem('restaurantId', data.restaurant_id);
-                    localStorage.setItem('ownerName', data.owner_name);
-                    
+                    console.log('Login successful, restaurantId:', data.restaurant_id);
                     window.location.href = 'owner_dashboard.html';
                 } else {
-                    errorElement.textContent = data.message || 'Login failed';
+                    alert('Login failed: ' + data.message);
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                errorElement.textContent = 'Login error occurred. Please try again.';
+                console.error('Login error:', error);
+                alert('An error occurred during login. Please try again.');
             })
             .finally(() => {
                 submitBtn.innerHTML = originalText;

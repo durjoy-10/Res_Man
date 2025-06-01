@@ -9,18 +9,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 function handleFileUpload($file, $uploadDir, $prefix) {
-    // Define base directory
-    $baseDir = '/opt/lampp/htdocs/restaurant_management/';
+    $baseDir = __DIR__ . '/';
     $fullUploadDir = $baseDir . ltrim($uploadDir, '/');
     
-    // Create directory if needed
     if (!file_exists($fullUploadDir)) {
         if (!mkdir($fullUploadDir, 0755, true)) {
             throw new Exception("Failed to create upload directory: $fullUploadDir");
         }
     }
     
-    // Validate file
     if ($file['error'] !== UPLOAD_ERR_OK) {
         throw new Exception("File upload error: " . $file['error']);
     }
@@ -30,7 +27,6 @@ function handleFileUpload($file, $uploadDir, $prefix) {
         throw new Exception("Invalid file type. Only images are allowed.");
     }
     
-    // Generate filename and move file
     $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = $prefix . uniqid() . '.' . strtolower($extension);
     $destination = $fullUploadDir . $filename;
@@ -39,16 +35,25 @@ function handleFileUpload($file, $uploadDir, $prefix) {
         throw new Exception("Failed to move uploaded file.");
     }
     
-    // Return relative path
     return $uploadDir . $filename;
 }
 
 try {
     $pdo->beginTransaction();
 
-    // Validate password is provided
-    if (empty($_POST['owner_password'])) {
-        throw new Exception("Owner password is required");
+    // Validate inputs
+    $requiredFields = ['name', 'description', 'owner_name', 'owner_email', 'owner_password', 'phone', 'address'];
+    foreach ($requiredFields as $field) {
+        if (empty($_POST[$field])) {
+            throw new Exception(ucfirst($field) . " is required");
+        }
+    }
+
+    // Validate email uniqueness
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM restaurants WHERE owner_email = ?");
+    $stmt->execute([$_POST['owner_email']]);
+    if ($stmt->fetchColumn() > 0) {
+        throw new Exception("Owner email already exists");
     }
 
     // Handle restaurant image
@@ -61,7 +66,7 @@ try {
         );
     }
 
-    // Hash the provided password
+    // Hash the password
     $hashedPassword = password_hash($_POST['owner_password'], PASSWORD_BCRYPT);
 
     // Insert restaurant
@@ -85,23 +90,20 @@ try {
     // Handle menu categories and items
     if (isset($_POST['category_name'])) {
         foreach ($_POST['category_name'] as $index => $categoryName) {
-            // Insert category
+            if (empty($categoryName)) continue;
             $stmt = $pdo->prepare("INSERT INTO menu_categories 
                 (restaurant_id, name, description) 
                 VALUES (?, ?, ?)");
-            
             $stmt->execute([
                 $restaurantId,
                 $categoryName,
                 $_POST['category_description'][$index] ?? null
             ]);
-            
             $categoryId = $pdo->lastInsertId();
 
-            // Handle menu items
             if (isset($_POST['item_name'][$index])) {
                 foreach ($_POST['item_name'][$index] as $itemIndex => $itemName) {
-                    // Handle item image
+                    if (empty($itemName)) continue;
                     $itemImagePath = null;
                     if (!empty($_FILES['item_image']['name'][$index][$itemIndex])) {
                         $file = [
@@ -111,7 +113,6 @@ try {
                             'error' => $_FILES['item_image']['error'][$index][$itemIndex],
                             'size' => $_FILES['item_image']['size'][$index][$itemIndex]
                         ];
-                        
                         $itemImagePath = handleFileUpload(
                             $file,
                             'uploads/menu_items/',
@@ -119,16 +120,14 @@ try {
                         );
                     }
 
-                    // Insert menu item with stock
                     $stmt = $pdo->prepare("INSERT INTO menu_items 
                         (category_id, name, description, price, stock, image_path) 
                         VALUES (?, ?, ?, ?, ?, ?)");
-                    
                     $stmt->execute([
                         $categoryId,
                         $itemName,
                         $_POST['item_description'][$index][$itemIndex] ?? null,
-                        $_POST['item_price'][$index][$itemIndex],
+                        $_POST['item_price'][$index][$itemIndex] ?? 0,
                         $_POST['item_stock'][$index][$itemIndex] ?? 0,
                         $itemImagePath
                     ]);
@@ -140,20 +139,17 @@ try {
     // Handle offers
     if (isset($_POST['offer_description'])) {
         foreach ($_POST['offer_description'] as $index => $offerDesc) {
-            if (!empty($offerDesc)) {
-                $validUntil = !empty($_POST['offer_valid_until'][$index]) ? 
-                    $_POST['offer_valid_until'][$index] : null;
-                
-                $stmt = $pdo->prepare("INSERT INTO offers 
-                    (restaurant_id, description, valid_until) 
-                    VALUES (?, ?, ?)");
-                
-                $stmt->execute([
-                    $restaurantId,
-                    $offerDesc,
-                    $validUntil
-                ]);
-            }
+            if (empty($offerDesc)) continue;
+            $validUntil = !empty($_POST['offer_valid_until'][$index]) ? 
+                $_POST['offer_valid_until'][$index] : null;
+            $stmt = $pdo->prepare("INSERT INTO offers 
+                (restaurant_id, description, valid_until) 
+                VALUES (?, ?, ?)");
+            $stmt->execute([
+                $restaurantId,
+                $offerDesc,
+                $validUntil
+            ]);
         }
     }
 
@@ -163,22 +159,11 @@ try {
         'success' => true,
         'restaurant_id' => $restaurantId,
         'owner_email' => $_POST['owner_email'],
-        'image_url' => $restaurantImagePath ? convertPathToUrl($restaurantImagePath) : null
+        'owner_password' => $_POST['owner_password'] // Return plain password for display
     ]);
 } catch (Exception $e) {
     $pdo->rollBack();
     error_log("Error in create_restaurant.php: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-}
-
-function convertPathToUrl($path) {
-    $basePath = '/opt/lampp/htdocs/restaurant_management/';
-    $relativePath = str_replace($basePath, '', $path);
-    
-    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-    $host = $_SERVER['HTTP_HOST'];
-    $baseUrl = dirname($_SERVER['SCRIPT_NAME']);
-    
-    return "{$protocol}://{$host}{$baseUrl}/{$relativePath}";
 }
 ?>

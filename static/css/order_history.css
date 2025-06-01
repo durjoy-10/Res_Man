@@ -41,19 +41,10 @@
             font-size: 1.1em;
         }
         
-        .status-pending {
-            color: #ff9800;
-        }
-        
-        .status-processing {
-            color: #2196f3;
-        }
-        
-        .status-delivered {
-            color: #4caf50;
-        }
-        
-        .status-cancelled {
-            color: #f44336;
-        }
+        .status-pending { color: #e67e22; }
+        .status-confirmed { color: #3498db; }
+        .status-preparing { color: #e74c3c; }
+        .status-out_for_delivery { color: #9b59b6; }
+        .status-delivered { color: #2ecc71; }
+        .status-cancelled { color: #95a5a6; }
         

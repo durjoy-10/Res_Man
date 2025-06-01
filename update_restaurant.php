@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 function handleFileUpload($file, $uploadDir, $prefix) {
-    $baseDir = '/opt/lampp/htdocs/restaurant_management/';
+    $baseDir = $_SERVER['DOCUMENT_ROOT'] . '/restaurant_management/';
     $fullUploadDir = $baseDir . ltrim($uploadDir, '/');
     
     if (!file_exists($fullUploadDir)) {
@@ -43,69 +43,58 @@ try {
 
     $restaurantId = $_POST['restaurant_id'];
 
+    // Verify ownership (simplified check)
+    $stmt = $pdo->prepare("SELECT id FROM restaurants WHERE id = ?");
+    $stmt->execute([$restaurantId]);
+    if ($stmt->rowCount() === 0) {
+        throw new Exception("Restaurant not found.");
+    }
+
     // Handle restaurant image
     $restaurantImagePath = null;
     if (!empty($_FILES['restaurant_image']['name'])) {
-        $restaurantImagePath = handleFileUpload(
-            $_FILES['restaurant_image'], 
-            'uploads/restaurants/', 
-            'restaurant_'
-        );
+        $restaurantImagePath = handleFileUpload($_FILES['restaurant_image'], 'uploads/restaurants/', 'restaurant_');
     }
 
-    // Handle owner password
-    $passwordUpdate = '';
-    $params = [
+    // Update restaurant details
+    $stmt = $pdo->prepare("UPDATE restaurants 
+        SET name = ?, description = ?, owner_name = ?, owner_email = ?, phone = ?, address = ?, image_path = COALESCE(?, image_path)
+        WHERE id = ?");
+    $stmt->execute([
         $_POST['name'],
         $_POST['description'],
         $_POST['owner_name'],
         $_POST['owner_email'],
         $_POST['phone'],
         $_POST['address'],
-        $restaurantImagePath
-    ];
+        $restaurantImagePath,
+        $restaurantId
+    ]);
 
-    if (!empty($_POST['owner_password'])) {
-        $hashedPassword = password_hash($_POST['owner_password'], PASSWORD_BCRYPT);
-        $passwordUpdate = ', owner_password = ?';
-        $params[] = $hashedPassword;
-    }
-
-    $params[] = $restaurantId;
-
-    // Update restaurant details
-    $stmt = $pdo->prepare("UPDATE restaurants 
-        SET name = ?, description = ?, owner_name = ?, owner_email = ?, phone = ?, address = ?, image_path = COALESCE(?, image_path) $passwordUpdate
-        WHERE id = ?");
-    
-    $stmt->execute($params);
-
-    // Delete existing categories, items, and offers
-    $stmt = $pdo->prepare("DELETE FROM offers WHERE restaurant_id = ?");
+    // Fetch existing categories
+    $stmt = $pdo->prepare("SELECT id, name FROM menu_categories WHERE restaurant_id = ?");
     $stmt->execute([$restaurantId]);
+    $existingCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $existingCategoryIds = array_column($existingCategories, 'id');
 
-    $stmt = $pdo->prepare("DELETE FROM menu_items WHERE category_id IN (SELECT id FROM menu_categories WHERE restaurant_id = ?)");
-    $stmt->execute([$restaurantId]);
-
-    $stmt = $pdo->prepare("DELETE FROM menu_categories WHERE restaurant_id = ?");
-    $stmt->execute([$restaurantId]);
-
-    // Insert new categories and items
     if (isset($_POST['category_name'])) {
         foreach ($_POST['category_name'] as $index => $categoryName) {
-            $stmt = $pdo->prepare("INSERT INTO menu_categories 
-                (restaurant_id, name, description) 
-                VALUES (?, ?, ?)");
-            
-            $stmt->execute([
-                $restaurantId,
-                $categoryName,
-                $_POST['category_description'][$index] ?? null
-            ]);
-            
-            $categoryId = $pdo->lastInsertId();
+            $categoryDescription = $_POST['category_description'][$index] ?? null;
+            $categoryId = isset($_POST['category_id'][$index]) ? $_POST['category_id'][$index] : null;
 
+            if ($categoryId && in_array($categoryId, $existingCategoryIds)) {
+                $stmt = $pdo->prepare("UPDATE menu_categories SET name = ?, description = ? WHERE id = ?");
+                $stmt->execute([$categoryName, $categoryDescription, $categoryId]);
+            } else {
+                $stmt = $pdo->prepare("INSERT INTO menu_categories (restaurant_id, name, description) VALUES (?, ?, ?)");
+                $stmt->execute([$restaurantId, $categoryName, $categoryDescription]);
+                $categoryId = $pdo->lastInsertId();
+            }
+
+            // Handle items
             if (isset($_POST['item_name'][$index])) {
+                $stmt = $pdo->prepare("DELETE FROM menu_items WHERE category_id = ?");
+                $stmt->execute([$categoryId]);
                 foreach ($_POST['item_name'][$index] as $itemIndex => $itemName) {
                     $itemImagePath = null;
                     if (!empty($_FILES['item_image']['name'][$index][$itemIndex])) {
@@ -116,18 +105,9 @@ try {
                             'error' => $_FILES['item_image']['error'][$index][$itemIndex],
                             'size' => $_FILES['item_image']['size'][$index][$itemIndex]
                         ];
-                        
-                        $itemImagePath = handleFileUpload(
-                            $file,
-                            'uploads/menu_items/',
-                            'item_'
-                        );
+                        $itemImagePath = handleFileUpload($file, 'uploads/menu_items/', 'item_');
                     }
-
-                    $stmt = $pdo->prepare("INSERT INTO menu_items 
-                        (category_id, name, description, price, stock, image_path) 
-                        VALUES (?, ?, ?, ?, ?, ?)");
-                    
+                    $stmt = $pdo->prepare("INSERT INTO menu_items (category_id, name, description, price, stock, image_path) VALUES (?, ?, ?, ?, ?, ?)");
                     $stmt->execute([
                         $categoryId,
                         $itemName,
@@ -141,32 +121,30 @@ try {
         }
     }
 
-    // Insert new offers
+    // Delete categories not submitted
+    $submittedCategoryIds = $_POST['category_id'] ?? [];
+    $categoriesToDelete = array_diff($existingCategoryIds, array_filter($submittedCategoryIds, 'strlen'));
+    if (!empty($categoriesToDelete)) {
+        $stmt = $pdo->prepare("DELETE FROM menu_categories WHERE id IN (" . implode(',', array_fill(0, count($categoriesToDelete), '?')) . ")");
+        $stmt->execute(array_values($categoriesToDelete));
+    }
+
+    // Handle offers
+    $stmt = $pdo->prepare("DELETE FROM offers WHERE restaurant_id = ?");
+    $stmt->execute([$restaurantId]);
     if (isset($_POST['offer_description'])) {
         foreach ($_POST['offer_description'] as $index => $offerDesc) {
             if (!empty($offerDesc)) {
-                $validUntil = !empty($_POST['offer_valid_until'][$index]) ? 
-                    $_POST['offer_valid_until'][$index] : null;
-                
-                $stmt = $pdo->prepare("INSERT INTO offers 
-                    (restaurant_id, description, valid_until) 
-                    VALUES (?, ?, ?)");
-                
-                $stmt->execute([
-                    $restaurantId,
-                    $offerDesc,
-                    $validUntil
-                ]);
+                $validUntil = !empty($_POST['offer_valid_until'][$index]) ? $_POST['offer_valid_until'][$index] : null;
+                $stmt = $pdo->prepare("INSERT INTO offers (restaurant_id, description, valid_until) VALUES (?, ?, ?)");
+                $stmt->execute([$restaurantId, $offerDesc, $validUntil]);
             }
         }
     }
 
     $pdo->commit();
 
-    echo json_encode([
-        'success' => true,
-        'restaurant_id' => $restaurantId
-    ]);
+    echo json_encode(['success' => true, 'restaurant_id' => $restaurantId]);
 } catch (Exception $e) {
     $pdo->rollBack();
     error_log("Error in update_restaurant.php: " . $e->getMessage());

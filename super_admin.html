@@ -19,974 +19,10 @@
             localStorage.removeItem('isAdminLoggedIn');
             window.location.href = 'admin_login.html';
         }
-
-        // Category counter for unique IDs
-        let categoryCounter = 0;
-        let itemCounter = 0;
-        
-        function switchTab(tabName) {
-            try {
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                
-                document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
-                document.getElementById(`${tabName}-tab`).classList.add('active');
-                
-                if (tabName === 'users') {
-                    loadUsers();
-                } else if (tabName === 'manage') {
-                    loadRestaurants();
-                } else if (tabName === 'orders') {
-                    loadOrders();
-                }
-            } catch (error) {
-                console.error('Error in switchTab:', error);
-                showNotification('Failed to switch tab: ' + error.message, 'error');
-            }
-        }
-        
-        function addCategory(containerId = 'categories-container', categoryData = null) {
-            try {
-                const categoryId = `category-${categoryCounter++}`;
-                const container = document.getElementById(containerId);
-                if (!container) throw new Error(`Container ${containerId} not found`);
-                
-                const newCategory = document.createElement('div');
-                newCategory.className = 'category-container';
-                newCategory.id = categoryId;
-                newCategory.innerHTML = `
-                    <div class="category-header">
-                        <h4>New Category</h4>
-                        <button type="button" class="btn btn-danger remove-category-btn">
-                            <i class="fas fa-trash"></i> Remove Category
-                        </button>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-tags"></i> Category Name:</label>
-                        <input type="text" name="category_name[]" value="${categoryData?.name || ''}" required>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-align-left"></i> Category Description:</label>
-                        <textarea name="category_description[]" rows="2">${categoryData?.description || ''}</textarea>
-                    </div>
-                    <h5>Menu Items</h5>
-                    <div class="menu-items-container" id="menu-items-${categoryId}">
-                        <!-- Items will be added here -->
-                    </div>
-                    <div class="category-actions">
-                        <button type="button" class="btn btn-secondary add-menu-item-btn">
-                            <i class="fas fa-plus"></i> Add Menu Item
-                        </button>
-                    </div>
-                `;
-                container.appendChild(newCategory);
-                
-                // Add menu items if categoryData is provided (for editing)
-                if (categoryData?.items) {
-                    categoryData.items.forEach(item => {
-                        addMenuItem(categoryId, item);
-                    });
-                } else {
-                    // Add first item to the category if creating new
-                    addMenuItem(categoryId);
-                }
-
-                // Attach event listeners to buttons within the new category
-                newCategory.querySelector('.remove-category-btn').addEventListener('click', () => removeCategory(categoryId));
-                newCategory.querySelector('.add-menu-item-btn').addEventListener('click', () => addMenuItem(categoryId));
-            } catch (error) {
-                console.error('Error in addCategory:', error);
-                showNotification('Failed to add category: ' + error.message, 'error');
-            }
-        }
-        
-        function removeCategory(categoryId) {
-            try {
-                if (confirm('Are you sure you want to remove this category and all its items?')) {
-                    const category = document.getElementById(categoryId);
-                    if (category) {
-                        category.remove();
-                    } else {
-                        throw new Error(`Category ${categoryId} not found`);
-                    }
-                }
-            } catch (error) {
-                console.error('Error in removeCategory:', error);
-                showNotification('Failed to remove category: ' + error.message, 'error');
-            }
-        }
-        
-        function addMenuItem(categoryId, itemData = null) {
-            try {
-                const itemId = `item-${itemCounter++}`;
-                const container = document.getElementById(`menu-items-${categoryId}`);
-                if (!container) throw new Error(`Menu items container for category ${categoryId} not found`);
-                
-                const newItem = document.createElement('div');
-                newItem.className = 'menu-item-group';
-                newItem.innerHTML = `
-                    <div class="form-group">
-                        <label><i class="fas fa-hamburger"></i> Item Name:</label>
-                        <input type="text" name="item_name[${categoryCounter-1}][]" value="${itemData?.name || ''}" required>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-align-left"></i> Description:</label>
-                        <textarea name="item_description[${categoryCounter-1}][]" rows="2">${itemData?.description || ''}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-tag"></i> Price:</label>
-                        <input type="number" step="0.01" name="item_price[${categoryCounter-1}][]" value="${itemData?.price || ''}" required>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-box"></i> Stock:</label>
-                        <input type="number" name="item_stock[${categoryCounter-1}][]" value="${itemData?.stock || 0}" min="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-image"></i> Image:</label>
-                        <input type="file" name="item_image[${categoryCounter-1}][]" accept="image/*">
-                        ${itemData?.image_path ? `<small>Current: ${itemData.image_path.split('/').pop()}</small>` : ''}
-                    </div>
-                    <div class="item-actions">
-                        <button type="button" class="btn btn-danger remove-menu-item-btn">
-                            <i class="fas fa-trash"></i> Remove Item
-                        </button>
-                    </div>
-                `;
-                container.appendChild(newItem);
-                
-                // Attach event listener to the remove button
-                newItem.querySelector('.remove-menu-item-btn').addEventListener('click', () => removeMenuItem(newItem));
-            } catch (error) {
-                console.error('Error in addMenuItem:', error);
-                showNotification('Failed to add menu item: ' + error.message, 'error');
-            }
-        }
-        
-        function removeMenuItem(element) {
-            try {
-                element.closest('.menu-item-group').remove();
-            } catch (error) {
-                console.error('Error in removeMenuItem:', error);
-                showNotification('Failed to remove menu item: ' + error.message, 'error');
-            }
-        }
-        
-        function addOffer(containerId = 'offers-container', offerData = null) {
-            try {
-                const container = document.getElementById(containerId);
-                if (!container) throw new Error(`Offers container ${containerId} not found`);
-                
-                const newOffer = document.createElement('div');
-                newOffer.className = 'offer-group';
-                newOffer.innerHTML = `
-                    <div class="form-group">
-                        <label><i class="fas fa-align-left"></i> Offer Description:</label>
-                        <textarea name="offer_description[]" rows="2">${offerData?.description || ''}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-calendar-check"></i> Valid Until:</label>
-                        <input type="date" name="offer_valid_until[]" value="${offerData?.valid_until || ''}">
-                    </div>
-                    <button type="button" class="btn btn-danger remove-offer-btn">
-                        <i class="fas fa-trash"></i> Remove
-                    </button>
-                `;
-                container.appendChild(newOffer);
-                
-                // Attach event listener to the remove button
-                newOffer.querySelector('.remove-offer-btn').addEventListener('click', () => removeOffer(newOffer));
-            } catch (error) {
-                console.error('Error in addOffer:', error);
-                showNotification('Failed to add offer: ' + error.message, 'error');
-            }
-        }
-        
-        function removeOffer(element) {
-            try {
-                element.closest('.offer-group').remove();
-            } catch (error) {
-                console.error('Error in removeOffer:', error);
-                showNotification('Failed to remove offer: ' + error.message, 'error');
-            }
-        }
-        
-        // Load existing restaurants
-        function loadRestaurants() {
-            try {
-                fetch('get_restaurant.php')
-                    .then(response => {
-                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                        return response.json();
-                    })
-                    .then(data => {
-                        const container = document.getElementById('restaurants-list');
-                        container.innerHTML = '';
-                        
-                        if (!data.success) {
-                            throw new Error(data.message || 'Failed to load restaurants');
-                        }
-
-                        const restaurants = data.data;
-
-                        if (restaurants.length === 0) {
-                            container.innerHTML = '<p>No restaurants found. Create your first restaurant!</p>';
-                            return;
-                        }
-                        
-                        restaurants.forEach(restaurant => {
-                            const card = document.createElement('div');
-                            card.className = 'restaurant-card';
-                            card.innerHTML = `
-                                <div class="restaurant-header">
-                                    ${restaurant.image_path ? 
-                                        `<img src="${restaurant.image_path}" alt="${restaurant.name}">` : 
-                                        '<div class="no-image">No Image</div>'}
-                                    <h3><i class="fas fa-hotel"></i> ${restaurant.name}</h3>
-                                </div>
-                                <p><i class="fas fa-align-left"></i> ${restaurant.description}</p>
-                                <p><i class="fas fa-user-tie"></i> ${restaurant.owner_name}</p>
-                                <p><i class="fas fa-envelope"></i> ${restaurant.owner_email}</p>
-                                <p><i class="fas fa-phone"></i> ${restaurant.phone}</p>
-                                <p><i class="fas fa-map-marker-alt"></i> ${restaurant.address}</p>
-                                <div class="action-buttons">
-                                    <button class="btn btn-primary view-restaurant-btn" data-id="${restaurant.id}">
-                                        <i class="fas fa-eye"></i> View
-                                    </button>
-                                    <button class="btn btn-warning edit-restaurant-btn" data-id="${restaurant.id}">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
-                                    <button class="btn btn-danger delete-restaurant-btn" data-id="${restaurant.id}">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </div>
-                                <div class="edit-restaurant-form" id="edit-restaurant-${restaurant.id}" style="display: none;">
-                                    <h4><i class="fas fa-edit"></i> Edit Restaurant</h4>
-                                    <form id="edit-restaurant-form-${restaurant.id}" enctype="multipart/form-data">
-                                        <input type="hidden" name="restaurant_id" value="${restaurant.id}">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-signature"></i> Restaurant Name:</label>
-                                            <input type="text" name="name" value="${restaurant.name}" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label><i class="fas fa-align-left"></i> Description:</label>
-                                            <textarea name="description" rows="3" required>${restaurant.description}</textarea>
-                                        </div>
-                                        <div class="form-group">
-                                            <label><i class="fas fa-user-tie"></i> Owner Name:</label>
-                                            <input type="text" name="owner_name" value="${restaurant.owner_name}" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label><i class="fas fa-envelope"></i> Owner Email:</label>
-                                            <input type="email" name="owner_email" value="${restaurant.owner_email}" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label><i class="fas fa-lock"></i> Owner Password:</label>
-                                            <input type="password" name="owner_password" placeholder="Enter new password or leave blank to keep current">
-                                        </div>
-                                        <div class="form-group">
-                                            <label><i class="fas fa-phone"></i> Phone Number:</label>
-                                            <input type="tel" name="phone" value="${restaurant.phone}" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label><i class="fas fa-map-marker-alt"></i> Address:</label>
-                                            <textarea name="address" rows="3" required>${restaurant.address}</textarea>
-                                        </div>
-                                        <div class="form-group">
-                                            <label><i class="fas fa-image"></i> Restaurant Image:</label>
-                                            <input type="file" name="restaurant_image" accept="image/*">
-                                            <small>Current: ${restaurant.image_path ? restaurant.image_path.split('/').pop() : 'None'}</small>
-                                        </div>
-                                        <h3><i class="fas fa-utensils"></i> Menu Categories & Items</h3>
-                                        <div id="edit-categories-${restaurant.id}">
-                                            <!-- Categories will be loaded here -->
-                                        </div>
-                                        <button type="button" class="btn btn-secondary add-category-btn">
-                                            <i class="fas fa-plus"></i> Add Category
-                                        </button>
-                                        <h3><i class="fas fa-percentage"></i> Special Offers</h3>
-                                        <div id="edit-offers-${restaurant.id}">
-                                            <!-- Offers will be loaded here -->
-                                        </div>
-                                        <button type="button" class="btn btn-secondary add-offer-btn">
-                                            <i class="fas fa-plus"></i> Add Offer
-                                        </button>
-                                        <div class="form-actions">
-                                            <button type="button" class="btn btn-secondary cancel-edit-btn">
-                                                <i class="fas fa-times"></i> Cancel
-                                            </button>
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="fas fa-save"></i> Save Changes
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            `;
-                            container.appendChild(card);
-
-                            // Attach event listeners to buttons
-                            card.querySelector('.view-restaurant-btn').addEventListener('click', () => viewRestaurant(restaurant.id));
-                            card.querySelector('.edit-restaurant-btn').addEventListener('click', () => editRestaurant(restaurant.id));
-                            card.querySelector('.delete-restaurant-btn').addEventListener('click', () => deleteRestaurant(restaurant.id));
-                            card.querySelector('.add-category-btn').addEventListener('click', () => addCategory(`edit-categories-${restaurant.id}`));
-                            card.querySelector('.add-offer-btn').addEventListener('click', () => addOffer(`edit-offers-${restaurant.id}`));
-                            card.querySelector('.cancel-edit-btn').addEventListener('click', () => toggleEditForm(restaurant.id));
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error loading restaurants:', error);
-                        showNotification('Failed to load restaurants: ' + error.message, 'error');
-                    });
-            } catch (error) {
-                console.error('Error in loadRestaurants:', error);
-                showNotification('Failed to load restaurants: ' + error.message, 'error');
-            }
-        }
-        
-        function viewRestaurant(id) {
-            try {
-                window.location.href = `index.php?restaurant_id=${id}`;
-            } catch (error) {
-                console.error('Error in viewRestaurant:', error);
-                showNotification('Failed to view restaurant: ' + error.message, 'error');
-            }
-        }
-        
-        function editRestaurant(id) {
-            try {
-                Promise.all([
-                    fetch(`get_restaurant.php?id=${id}`).then(res => res.json()),
-                    fetch(`get_categories.php?restaurant_id=${id}`).then(res => res.json()),
-                    fetch(`get_offers.php?restaurant_id=${id}`).then(res => res.json())
-                ])
-                .then(([restaurantRes, categoriesRes, offersRes]) => {
-                    if (!restaurantRes.success) {
-                        throw new Error(`Failed to load restaurant data: ${restaurantRes.message || 'Unknown error'}`);
-                    }
-                    if (!categoriesRes.success) {
-                        throw new Error(`Failed to load categories: ${categoriesRes.message || 'Unknown error'}`);
-                    }
-                    if (!offersRes.success) {
-                        throw new Error(`Failed to load offers: ${offersRes.message || 'Unknown error'}`);
-                    }
-
-                    const restaurantData = restaurantRes.data;
-                    const categoriesData = categoriesRes.data;
-                    const offersData = offersRes.data;
-
-                    const restaurant = Array.isArray(restaurantData) ? restaurantData[0] : restaurantData;
-
-                    // Toggle edit form visibility
-                    toggleEditForm(id);
-
-                    // Load categories and items
-                    const categoriesContainer = document.getElementById(`edit-categories-${id}`);
-                    categoriesContainer.innerHTML = '';
-                    categoriesData.forEach(category => {
-                        addCategory(`edit-categories-${id}`, category);
-                    });
-
-                    // Load offers
-                    const offersContainer = document.getElementById(`edit-offers-${id}`);
-                    offersContainer.innerHTML = '';
-                    offersData.forEach(offer => {
-                        addOffer(`edit-offers-${id}`, offer);
-                    });
-
-                    // Handle form submission for updating restaurant
-                    const form = document.getElementById(`edit-restaurant-form-${id}`);
-                    form.addEventListener('submit', function(e) {
-                        e.preventDefault();
-
-                        const submitBtn = this.querySelector('button[type="submit"]');
-                        const originalText = submitBtn.innerHTML;
-                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-                        submitBtn.disabled = true;
-
-                        const formData = new FormData(this);
-
-                        fetch('update_restaurant.php', {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                showNotification('Restaurant updated successfully!', 'success');
-                                toggleEditForm(id);
-                                loadRestaurants();
-                            } else {
-                                throw new Error(data.message || 'Unknown error occurred');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error updating restaurant:', error);
-                            showNotification(`Failed to update restaurant: ${error.message}`, 'error');
-                        })
-                        .finally(() => {
-                            submitBtn.innerHTML = originalText;
-                            submitBtn.disabled = false;
-                        });
-                    }, { once: true }); // Ensure the listener is added only once
-                })
-                .catch(error => {
-                    console.error('Error loading restaurant data for editing:', error);
-                    showNotification('Failed to load restaurant data for editing: ' + error.message, 'error');
-                });
-            } catch (error) {
-                console.error('Error in editRestaurant:', error);
-                showNotification('Failed to edit restaurant: ' + error.message, 'error');
-            }
-        }
-        
-        function toggleEditForm(id) {
-            try {
-                const form = document.getElementById(`edit-restaurant-${id}`);
-                if (form) {
-                    form.style.display = form.style.display === 'none' ? 'block' : 'none';
-                } else {
-                    throw new Error(`Edit form for restaurant ${id} not found`);
-                }
-            } catch (error) {
-                console.error('Error in toggleEditForm:', error);
-                showNotification('Failed to toggle edit form: ' + error.message, 'error');
-            }
-        }
-        
-        function deleteRestaurant(id) {
-            try {
-                if (confirm('Are you sure you want to delete this restaurant?')) {
-                    fetch(`delete_restaurant.php?id=${id}`, { method: 'DELETE' })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                showNotification('Restaurant deleted successfully!', 'success');
-                                loadRestaurants();
-                            } else {
-                                throw new Error(data.message || 'Error deleting restaurant');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error deleting restaurant:', error);
-                            showNotification('Failed to delete restaurant: ' + error.message, 'error');
-                        });
-                }
-            } catch (error) {
-                console.error('Error in deleteRestaurant:', error);
-                showNotification('Failed to delete restaurant: ' + error.message, 'error');
-            }
-        }
-        
-        // Load all users
-        function loadUsers() {
-            try {
-                const search = document.getElementById('user-search').value;
-                const sort = document.getElementById('user-sort').value;
-                const container = document.getElementById('users-list');
-                
-                container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading users...</div>';
-                
-                fetch(`get_users.php?search=${encodeURIComponent(search)}&sort=${sort}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (!data.success) throw new Error(data.message || 'Failed to load users');
-                        
-                        container.innerHTML = '';
-                        
-                        if (data.data.length === 0) {
-                            container.innerHTML = '<div class="no-users"><i class="fas fa-user-slash"></i> No users found</div>';
-                            return;
-                        }
-                        
-                        data.data.forEach(user => {
-                            const card = document.createElement('div');
-                            card.className = 'user-card';
-                            
-                            const photoUrl = user.profile_photo 
-                                ? user.profile_photo 
-                                : 'static/images/default-avatar.jpg';
-                            
-                            card.innerHTML = `
-                                <div class="user-header">
-                                    <div class="profile-photo-container">
-                                        ${user.profile_photo 
-                                            ? `<img src="${photoUrl}" alt="${user.name || user.username}" 
-                                                 onerror="this.onerror=null;this.src='static/images/default-avatar.jpg'">`
-                                            : `<i class="fas fa-user-circle default-profile-icon"></i>`}
-                                    </div>
-                                    <div class="user-info">
-                                        <h3>${user.name || 'No name provided'}</h3>
-                                        <p><i class="fas fa-at"></i> ${user.username}</p>
-                                        <p><i class="fas fa-envelope"></i> ${user.email}</p>
-                                    </div>
-                                    <div class="user-actions">
-                                        <button class="btn btn-danger delete-user-btn" data-id="${user.id}" data-username="${user.username}">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="user-details">
-                                    ${user.phone ? `
-                                    <div class="detail-item">
-                                        <i class="fas fa-phone"></i> ${user.phone}
-                                    </div>
-                                    ` : ''}
-                                    ${user.address ? `
-                                    <div class="detail-item">
-                                        <i class="fas fa-map-marker-alt"></i> ${user.address}
-                                    </div>
-                                    ` : ''}
-                                    <div class="detail-item">
-                                        <i class="fas fa-calendar-alt"></i> Joined: ${new Date(user.created_at).toLocaleDateString()}
-                                    </div>
-                                </div>
-                                
-                                <div class="edit-user-form" id="edit-user-${user.id}" style="display: none;">
-                                    <h4><i class="fas fa-user-edit"></i> Edit User</h4>
-                                    <form id="edit-user-form-${user.id}" enctype="multipart/form-data">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-signature"></i> Full Name:</label>
-                                            <input type="text" id="name-${user.id}" value="${user.name || ''}" class="form-control">
-                                        </div>
-                                        <div class="form-group">
-                                            <label><i class="fas fa-at"></i> Username:</label>
-                                            <input type="text" id="username-${user.id}" value="${user.username}" class="form-control" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label><i class="fas fa-envelope"></i> Email:</label>
-                                            <input type="email" id="email-${user.id}" value="${user.email}" class="form-control" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label><i class="fas fa-phone"></i> Phone:</label>
-                                            <input type="tel" id="phone-${user.id}" value="${user.phone || ''}" class="form-control">
-                                        </div>
-                                        <div class="form-group">
-                                            <label><i class="fas fa-map-marker-alt"></i> Address:</label>
-                                            <textarea id="address-${user.id}" class="form-control" rows="2">${user.address || ''}</textarea>
-                                        </div>
-                                        <div class="form-group">
-                                            <label><i class="fas fa-image"></i> Profile Photo:</label>
-                                            <input type="file" id="photo-${user.id}" name="profile_photo" class="form-control" accept="image/*">
-                                            <small>Current: ${user.profile_photo ? user.profile_photo.split('/').pop() : 'Default'}</small>
-                                        </div>
-                                        <div class="form-group">
-                                            <label><i class="fas fa-lock"></i> New Password:</label>
-                                            <input type="password" id="password-${user.id}" class="form-control" placeholder="Leave blank to keep current">
-                                        </div>
-                                        <div class="form-actions">
-                                            <button type="button" class="btn btn-secondary cancel-edit-user-btn">
-                                                <i class="fas fa-times"></i> Cancel
-                                            </button>
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="fas fa-save"></i> Save Changes
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            `;
-                            container.appendChild(card);
-
-                            // Attach event listeners
-                            card.querySelector('.delete-user-btn').addEventListener('click', () => deleteUser(user.id, user.username));
-                            const editForm = card.querySelector(`#edit-user-form-${user.id}`);
-                            editForm.addEventListener('submit', (e) => {
-                                e.preventDefault();
-                                updateUser(user.id);
-                            }, { once: true });
-                            card.querySelector('.cancel-edit-user-btn').addEventListener('click', () => toggleEditUserForm(user.id));
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error loading users:', error);
-                        container.innerHTML = `
-                            <div class="error-message">
-                                <p><i class="fas fa-exclamation-triangle"></i> Failed to load users</p>
-                                <p>${error.message}</p>
-                                <button onclick="loadUsers()" class="btn btn-retry">
-                                    <i class="fas fa-sync-alt"></i> Try Again
-                                </button>
-                            </div>
-                        `;
-                    });
-            } catch (error) {
-                console.error('Error in loadUsers:', error);
-                showNotification('Failed to load users: ' + error.message, 'error');
-            }
-        }
-
-        function toggleEditUserForm(userId) {
-            try {
-                const form = document.getElementById(`edit-user-${userId}`);
-                if (form) {
-                    form.style.display = form.style.display === 'none' ? 'block' : 'none';
-                } else {
-                    throw new Error(`Edit form for user ${userId} not found`);
-                }
-            } catch (error) {
-                console.error('Error in toggleEditUserForm:', error);
-                showNotification('Failed to toggle user edit form: ' + error.message, 'error');
-            }
-        }
-
-        function updateUser(userId) {
-            try {
-                const formData = new FormData();
-                formData.append('id', userId);
-                formData.append('name', document.getElementById(`name-${userId}`).value);
-                formData.append('username', document.getElementById(`username-${userId}`).value);
-                formData.append('email', document.getElementById(`email-${userId}`).value);
-                formData.append('phone', document.getElementById(`phone-${userId}`).value);
-                formData.append('address', document.getElementById(`address-${userId}`).value);
-                const photoInput = document.getElementById(`photo-${userId}`);
-                if (photoInput.files.length > 0) {
-                    formData.append('profile_photo', photoInput.files[0]);
-                }
-                const password = document.getElementById(`password-${userId}`).value;
-                if (password) {
-                    formData.append('password', password);
-                }
-
-                fetch('update_user.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('User updated successfully', 'success');
-                        loadUsers();
-                    } else {
-                        throw new Error(data.message || 'Update failed');
-                    }
-                })
-                .catch(error => {
-                    console.error('Update error:', error);
-                    showNotification(`Failed to update user: ${error.message}`, 'error');
-                });
-            } catch (error) {
-                console.error('Error in updateUser:', error);
-                showNotification('Failed to update user: ' + error.message, 'error');
-            }
-        }
-        
-        function deleteUser(userId, username) {
-            try {
-                if (confirm(`Are you sure you want to permanently delete user "${username}"?`)) {
-                    fetch(`delete_user.php?id=${userId}`, { 
-                        method: 'DELETE' 
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            showNotification(`User "${username}" deleted successfully`, 'success');
-                            loadUsers();
-                        } else {
-                            throw new Error(data.message || 'Delete failed');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Delete error:', error);
-                        showNotification(`Failed to delete user: ${error.message}`, 'error');
-                    });
-                }
-            } catch (error) {
-                console.error('Error in deleteUser:', error);
-                showNotification('Failed to delete user: ' + error.message, 'error');
-            }
-        }
-        
-        // Helper function to show notifications
-        function showNotification(message, type = 'info') {
-            try {
-                const notification = document.createElement('div');
-                notification.className = `notification ${type}`;
-                notification.innerHTML = `
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-                    ${message}
-                `;
-                document.body.appendChild(notification);
-                
-                setTimeout(() => {
-                    notification.classList.add('fade-out');
-                    setTimeout(() => notification.remove(), 500);
-                }, 3000);
-            } catch (error) {
-                console.error('Error in showNotification:', error);
-            }
-        }
-
-        // Load all orders
-        function loadOrders() {
-            try {
-                const status = document.getElementById('order-status-filter').value;
-                const search = document.getElementById('order-search').value;
-                const container = document.getElementById('orders-list');
-                
-                container.innerHTML = '<div class="loading">Loading orders...</div>';
-                
-                fetch(`get_orders.php?status=${status}&search=${encodeURIComponent(search)}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        return response.json();
-                    })
-                    .then(data => {
-                        container.innerHTML = '';
-                        
-                        if (data.length === 0) {
-                            container.innerHTML = '<p class="no-orders">No orders found matching your criteria.</p>';
-                            return;
-                        }
-                        
-                        data.forEach(order => {
-                            const card = document.createElement('div');
-                            card.className = 'order-card';
-                            card.innerHTML = `
-                                <div class="order-header">
-                                    <div>
-                                        <h3>Order #${order.id}</h3>
-                                        <p><i class="fas fa-user"></i> ${order.user_name} (ID: ${order.user_id})</p>
-                                        <p><i class="fas fa-store"></i> ${order.name}</p>
-                                    </div>
-                                    <div>
-                                        <p><i class="fas fa-calendar-alt"></i> ${new Date(order.order_date).toLocaleString()}</p>
-                                        <p class="status-${order.status}">
-                                            <i class="fas fa-info-circle"></i> ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                                        </p>
-                                    </div>
-                                </div>
-                                
-                                <div class="order-details">
-                                    <p><i class="fas fa-map-marker-alt"></i> Delivery Address: ${order.delivery_address || 'N/A'}</p>
-                                    ${order.special_instructions ? `<p><i class="fas fa-sticky-note"></i> ${order.special_instructions}</p>` : ''}
-                                    
-                                    <div class="order-items">
-                                        ${order.items.split(', ').map(item => `
-                                            <div class="order-item">
-                                                <span>${item.replace(/</g, '<').replace(/>/g, '>')}</span>
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                    
-                                    <div class="order-total">
-                                        <strong>Total:</strong> $${parseFloat(order.total_amount).toFixed(2)}
-                                    </div>
-                                    <p><i class="fas fa-credit-card"></i> Payment Method: ${order.payment_method ? order.payment_method.replace('_', ' ').replace(/\b\w/g, char => char.toUpperCase()) : 'N/A'}</p>
-                                    <p><i class="fas fa-phone"></i> Payment Number: ${order.payment_number || 'N/A'}</p>
-                                    <p><i class="fas fa-exchange-alt"></i> Transaction ID: ${order.transaction_id || 'N/A'}</p>
-                                </div>
-                                
-                                <div class="order-actions">
-                                    ${order.status === 'pending' ? `
-                                        <button class="btn btn-process update-order-btn" data-order-id="${order.id}" data-status="processing">
-                                            <i class="fas fa-spinner"></i> Mark as Processing
-                                        </button>
-                                    ` : ''}
-                                    
-                                    ${order.status === 'processing' ? `
-                                        <button class="btn btn-deliver update-order-btn" data-order-id="${order.id}" data-status="delivered">
-                                            <i class="fas fa-truck"></i> Mark as Delivered
-                                        </button>
-                                    ` : ''}
-                                    
-                                    ${(order.status === 'pending' || order.status === 'processing') ? `
-                                        <button class="btn btn-cancel update-order-btn" data-order-id="${order.id}" data-status="cancelled">
-                                            <i class="fas fa-times"></i> Cancel Order
-                                        </button>
-                                    ` : ''}
-                                </div>
-                            `;
-                            container.appendChild(card);
-
-                            // Attach event listeners to order action buttons
-                            card.querySelectorAll('.update-order-btn').forEach(btn => {
-                                btn.addEventListener('click', () => {
-                                    const orderId = btn.dataset.orderId;
-                                    const status = btn.dataset.status;
-                                    updateOrderStatus(orderId, status);
-                                });
-                            });
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error loading orders:', error);
-                        container.innerHTML = `
-                            <div class="error-message">
-                                <p>Failed to load orders</p>
-                                <p>${error.message}</p>
-                                <button onclick="loadOrders()" class="btn btn-retry">
-                                    <i class="fas fa-sync-alt"></i> Try Again
-                                </button>
-                            </div>
-                        `;
-                    });
-            } catch (error) {
-                console.error('Error in loadOrders:', error);
-                showNotification('Failed to load orders: ' + error.message, 'error');
-            }
-        }
-        
-        function updateOrderStatus(orderId, newStatus) {
-            try {
-                if (!confirm(`Are you sure you want to change order #${orderId} status to "${newStatus}"?`)) {
-                    return;
-                }
-
-                const buttons = document.querySelectorAll(`.order-actions button`);
-                buttons.forEach(btn => {
-                    btn.disabled = true;
-                    const originalHTML = btn.innerHTML;
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Updating...`;
-                    btn.dataset.original = originalHTML;
-                });
-
-                fetch('update_order_status.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        order_id: orderId,
-                        status: newStatus
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.json();
-                })
-                .then(data => {
-                    if (!data.success) throw new Error(data.message || 'Status update failed');
-                    
-                    const successMsg = document.createElement('div');
-                    successMsg.className = 'success-message';
-                    successMsg.innerHTML = `
-                        <i class="fas fa-check-circle"></i> Order #${orderId} status updated to ${newStatus}
-                    `;
-                    document.getElementById('orders-list').prepend(successMsg);
-                    
-                    setTimeout(() => {
-                        loadOrders();
-                    }, 1000);
-                })
-                .catch(error => {
-                    console.error('Update error:', error);
-                    showNotification(`Failed to update order status: ${error.message}`, 'error');
-                    buttons.forEach(btn => {
-                        btn.disabled = false;
-                        btn.innerHTML = btn.dataset.original;
-                    });
-                });
-            } catch (error) {
-                console.error('Error in updateOrderStatus:', error);
-                showNotification('Failed to update order status: ' + error.message, 'error');
-            }
-        }
-        
-        // Form submission for creating restaurant
-        document.getElementById('restaurant-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            try {
-                // Basic form validation
-                const name = this.querySelector('#restaurant-name').value.trim();
-                const description = this.querySelector('#restaurant-desc').value.trim();
-                const ownerName = this.querySelector('#owner-name').value.trim();
-                const ownerEmail = this.querySelector('#owner-email').value.trim();
-                const ownerPassword = this.querySelector('#owner-password').value.trim();
-                const phone = this.querySelector('#phone').value.trim();
-                const address = this.querySelector('#address').value.trim();
-
-                if (!name || !description || !ownerName || !ownerEmail || !ownerPassword || !phone || !address) {
-                    showNotification('Please fill in all required fields', 'error');
-                    return;
-                }
-
-                // Show loading state
-                const submitBtn = this.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
-                submitBtn.disabled = true;
-                
-                // Prepare FormData
-                const formData = new FormData(this);
-                
-                // Send the request
-                fetch('create_restaurant.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        const message = `Restaurant created successfully! ID: ${data.restaurant_id}
-                        Owner credentials:
-                        Email: ${data.owner_email}
-                        Password: ${data.owner_password}
-                        (Please change this password immediately)`;
-                        
-                        showNotification('Restaurant created successfully!', 'success');
-                        alert(message);
-                        this.reset();
-                        loadRestaurants();
-                        switchTab('manage');
-                    } else {
-                        throw new Error(data.message || 'Unknown error occurred');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error creating restaurant:', error);
-                    showNotification(`Failed to create restaurant: ${error.message}`, 'error');
-                })
-                .finally(() => {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                });
-            } catch (error) {
-                console.error('Error in restaurant form submission:', error);
-                showNotification('Failed to submit restaurant form: ' + error.message, 'error');
-                const submitBtn = this.querySelector('button[type="submit"]');
-                submitBtn.innerHTML = '<i class="fas fa-save"></i> Create Restaurant';
-                submitBtn.disabled = false;
-            }
-        });
-
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            try {
-                // Add initial category
-                addCategory();
-
-                // Attach event listeners to static buttons
-                document.querySelector('.logout-btn').addEventListener('click', logout);
-                document.querySelector('#categories-container').parentElement.querySelector('.btn-secondary').addEventListener('click', () => addCategory());
-                document.querySelector('#offers-container').parentElement.querySelector('.btn-secondary').addEventListener('click', () => addOffer());
-                
-                // Load restaurants
-                loadRestaurants();
-            } catch (error) {
-                console.error('Error initializing page:', error);
-                showNotification('Failed to initialize page: ' + error.message, 'error');
-            }
-        });
     </script>
-
     <div class="admin-container">
         <!-- Logout button -->
-        <button class="logout-btn">
+        <button class="logout-btn" onclick="logout()">
             <i class="fas fa-sign-out-alt"></i> Logout
         </button>
 
@@ -998,9 +34,6 @@
             </div>
             <div class="tab" onclick="switchTab('manage')">
                 <i class="fas fa-utensils"></i> Manage Restaurants
-            </div>
-            <div class="tab" onclick="switchTab('orders')">
-                <i class="fas fa-shopping-bag"></i> Manage Orders
             </div>
             <div class="tab" onclick="switchTab('users')">
                 <i class="fas fa-users"></i> Manage Users
@@ -1014,51 +47,41 @@
                     <label for="restaurant-name"><i class="fas fa-signature"></i> Restaurant Name:</label>
                     <input type="text" id="restaurant-name" name="name" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="restaurant-desc"><i class="fas fa-align-left"></i> Description:</label>
                     <textarea id="restaurant-desc" name="description" rows="3" required></textarea>
                 </div>
-                
                 <div class="form-group">
                     <label for="owner-name"><i class="fas fa-user-tie"></i> Owner Name:</label>
                     <input type="text" id="owner-name" name="owner_name" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="owner-email"><i class="fas fa-envelope"></i> Owner Email:</label>
                     <input type="email" id="owner-email" name="owner_email" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="owner-password"><i class="fas fa-lock"></i> Owner Password:</label>
-                    <input type="password" id="owner-password" name="owner_password" required>
+                    <input type="password" id="owner-password" name="owner_password" required minlength="8" placeholder="Minimum 8 characters">
                 </div>
-                
                 <div class="form-group">
                     <label for="phone"><i class="fas fa-phone"></i> Phone Number:</label>
                     <input type="tel" id="phone" name="phone" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="address"><i class="fas fa-map-marker-alt"></i> Address:</label>
                     <textarea id="address" name="address" rows="3" required></textarea>
-                </div>
-                
+ Reno                    </div>
                 <div class="form-group">
                     <label for="restaurant-image"><i class="fas fa-image"></i> Restaurant Image:</label>
                     <input type="file" id="restaurant-image" name="restaurant_image" accept="image/*">
                 </div>
-                
                 <h3><i class="fas fa-utensils"></i> Menu Categories & Items</h3>
                 <div id="categories-container">
                     <!-- Categories will be added here -->
                 </div>
-                
-                <button type="button" class="btn btn-secondary">
+                <button type="button" class="btn btn-secondary" onclick="addCategory()">
                     <i class="fas fa-plus"></i> Add Category
                 </button>
-                
                 <h3><i class="fas fa-percentage"></i> Special Offers</h3>
                 <div id="offers-container">
                     <div class="offer-group">
@@ -1070,16 +93,14 @@
                             <label><i class="fas fa-calendar-check"></i> Valid Until:</label>
                             <input type="date" name="offer_valid_until[]">
                         </div>
-                        <button type="button" class="btn btn-danger remove-offer-btn">
+                        <button type="button" class="btn btn-danger" onclick="removeOffer(this)">
                             <i class="fas fa-trash"></i> Remove
                         </button>
                     </div>
                 </div>
-                
-                <button type="button" class="btn btn-secondary">
+                <button type="button" class="btn btn-secondary" onclick="addOffer()">
                     <i class="fas fa-plus"></i> Add Offer
                 </button>
-                
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Create Restaurant
@@ -1089,26 +110,9 @@
         </div>
         
         <div id="manage-tab" class="tab-content">
-            <h2><i class="fas fa-edit"></i> Manage Restaurants</h2>
+            <h2><i class="fas fa-utensils"></i> Manage Restaurants</h2>
             <div class="restaurant-list" id="restaurants-list">
                 <!-- Restaurants will be loaded here -->
-            </div>
-        </div>
-        
-        <div id="orders-tab" class="tab-content">
-            <h2><i class="fas fa-shopping-bag"></i> Manage Orders</h2>
-            <div class="order-filters">
-                <select id="order-status-filter" onchange="loadOrders()">
-                    <option value="all">All Orders</option>
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
-                </select>
-                <input type="text" id="order-search" placeholder="Search by order ID or user..." onkeyup="loadOrders()">
-            </div>
-            <div class="order-list" id="orders-list">
-                <!-- Orders will be loaded here -->
             </div>
         </div>
         
@@ -1128,5 +132,503 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Category and item counters
+        let categoryCounter = 0;
+        let itemCounter = 0;
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            if (tabName === 'users') loadUsers();
+            else if (tabName === 'manage') loadRestaurants();
+        }
+        
+        function addCategory(containerId = 'categories-container', categoryData = null) {
+            console.log('addCategory called with containerId:', containerId); // Debug log
+            const container = document.getElementById(containerId);
+            if (!container) {
+                console.error('Categories container not found:', containerId);
+                showNotification('Error: Categories container not found', 'error');
+                return;
+            }
+            const categoryId = `category-${categoryCounter++}`;
+            const newCategory = document.createElement('div');
+            newCategory.className = 'category-container';
+            newCategory.id = categoryId;
+            try {
+                newCategory.innerHTML = `
+                    <div class="category-header">
+                        <h4>${categoryData?.name || 'New Category'}</h4>
+                        <button type="button" class="btn btn-danger" onclick="removeCategory('${categoryId}')">
+                            <i class="fas fa-trash"></i> Remove Category
+                        </button>
+                    </div>
+                    <input type="hidden" name="category_id[]" value="${categoryData?.id || ''}">
+                    <div class="form-group">
+                        <label><i class="fas fa-tags"></i> Category Name:</label>
+                        <input type="text" name="category_name[]" value="${categoryData?.name || ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-align-left"></i> Category Description:</label>
+                        <textarea name="category_description[]" rows="2">${categoryData?.description || ''}</textarea>
+                    </div>
+                    <h5>Menu Items</h5>
+                    <div class="menu-items-container" id="menu-items-${categoryId}">
+                        <!-- Items will be added here -->
+                    </div>
+                    <div class="category-actions">
+                        <button type="button" class="btn btn-secondary" onclick="addMenuItem('${categoryId}')">
+                            <i class="fas fa-plus"></i> Add Menu Item
+                        </button>
+                    </div>
+                `;
+                container.appendChild(newCategory);
+                if (categoryData?.items) {
+                    categoryData.items.forEach(item => addMenuItem(categoryId, item));
+                } else {
+                    addMenuItem(categoryId);
+                }
+                console.log('Category added:', categoryId); // Debug log
+            } catch (error) {
+                console.error('Error adding category:', error);
+                showNotification('Failed to add category: ' + error.message, 'error');
+            }
+        }
+        
+        function removeCategory(categoryId) {
+            if (confirm('Are you sure you want to remove this category and all its items?')) {
+                const categoryElement = document.getElementById(categoryId);
+                if (categoryElement) {
+                    categoryElement.remove();
+                    console.log('Category removed:', categoryId); // Debug log
+                } else {
+                    console.error('Category not found:', categoryId);
+                }
+            }
+        }
+        
+        function addMenuItem(categoryId, itemData = null) {
+            console.log('addMenuItem called for category:', categoryId); // Debug log
+            const container = document.getElementById(`menu-items-${categoryId}`);
+            if (!container) {
+                console.error('Menu items container not found:', `menu-items-${categoryId}`);
+                return;
+            }
+            const itemId = `item-${itemCounter++}`;
+            const newItem = document.createElement('div');
+            newItem.className = 'menu-item-group';
+            newItem.innerHTML = `
+                <input type="hidden" name="item_id[${categoryCounter-1}][]" value="${itemData?.id || ''}">
+                <div class="form-group">
+                    <label><i class="fas fa-hamburger"></i> Item Name:</label>
+                    <input type="text" name="item_name[${categoryCounter-1}][]" value="${itemData?.name || ''}" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-align-left"></i> Description:</label>
+                    <textarea name="item_description[${categoryCounter-1}][]" rows="2">${itemData?.description || ''}</textarea>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Price:</label>
+                    <input type="number" step="0.01" name="item_price[${categoryCounter-1}][]" value="${itemData?.price || ''}" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-box"></i> Stock:</label>
+                    <input type="number" name="item_stock[${categoryCounter-1}][]" value="${itemData?.stock || 0}" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-image"></i> Image:</label>
+                    <input type="file" name="item_image[${categoryCounter-1}][]" accept="image/*">
+                    ${itemData?.image_path ? `<small>Current: ${itemData.image_path.split('/').pop()}</small>` : ''}
+                </div>
+                <div class="item-actions">
+                    <button type="button" class="btn btn-danger" onclick="removeMenuItem(this)">
+                        <i class="fas fa-trash"></i> Remove Item
+                    </button>
+                </div>
+            `;
+            container.appendChild(newItem);
+            console.log('Menu item added:', itemId); // Debug log
+        }
+        
+        function removeMenuItem(button) {
+            const itemGroup = button.closest('.menu-item-group');
+            if (itemGroup) {
+                itemGroup.remove();
+                console.log('Menu item removed'); // Debug log
+            }
+        }
+        
+        function addOffer(containerId = 'offers-container', offerData = null) {
+            console.log('addOffer called'); // Debug log
+            const container = document.getElementById(containerId);
+            if (!container) {
+                console.error('Offers container not found:', containerId);
+                return;
+            }
+            const newOffer = document.createElement('div');
+            newOffer.className = 'offer-group';
+            newOffer.innerHTML = `
+                <input type="hidden" name="offer_id[]" value="${offerData?.id || ''}">
+                <div class="form-group">
+                    <label><i class="fas fa-align-left"></i> Offer Description:</label>
+                    <textarea name="offer_description[]" rows="2">${offerData?.description || ''}</textarea>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-check"></i> Valid Until:</label>
+                    <input type="date" name="offer_valid_until[]" value="${offerData?.valid_until || ''}">
+                </div>
+                <button type="button" class="btn btn-danger" onclick="removeOffer(this)">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+            `;
+            container.appendChild(newOffer);
+            console.log('Offer added'); // Debug log
+        }
+        
+        function removeOffer(button) {
+            const offerGroup = button.closest('.offer-group');
+            if (offerGroup) {
+                offerGroup.remove();
+                console.log('Offer removed'); // Debug log
+            }
+        }
+        
+        function loadRestaurants() {
+            fetch('admin_get_restaurant.php')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('restaurants-list');
+                    container.innerHTML = '';
+                    if (!data.success) {
+                        throw new Error(data.message || 'Failed to load restaurants');
+                    }
+                    const restaurants = data.data;
+                    if (restaurants.length === 0) {
+                        container.innerHTML = '<p>No restaurants found. Create your first restaurant!</p>';
+                        return;
+                    }
+                    restaurants.forEach(restaurant => {
+                        const card = document.createElement('div');
+                        card.className = 'restaurant-card';
+                        card.innerHTML = `
+                            <div class="restaurant-header">
+                                ${restaurant.image_path ? 
+                                    `<img src="${restaurant.image_path}" alt="${restaurant.name}">` : 
+                                    '<div class="no-image">No Image</div>'}
+                                <h3><i class="fas fa-hotel"></i> ${restaurant.name}</h3>
+                            </div>
+                            <p><i class="fas fa-align-left"></i> ${restaurant.description}</p>
+                            <p><i class="fas fa-user-tie"></i> ${restaurant.owner_name}</p>
+                            <p><i class="fas fa-envelope"></i> ${restaurant.owner_email}</p>
+                            <p><i class="fas fa-phone"></i> ${restaurant.phone}</p>
+                            <p><i class="fas fa-map-marker-alt"></i> ${restaurant.address}</p>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="viewRestaurant(${restaurant.id})">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteRestaurant(${restaurant.id})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading restaurants:', error);
+                    showNotification('Failed to load restaurants: ' + error.message, 'error');
+                });
+        }
+        
+        function viewRestaurant(id) {
+            window.location.href = `index.php?restaurant_id=${id}`;
+        }
+        
+        function deleteRestaurant(id) {
+            if (confirm('Are you sure you want to delete this restaurant?')) {
+                fetch(`admin_delete_restaurant.php?id=${id}`, { method: 'DELETE' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification('Restaurant deleted successfully!');
+                            loadRestaurants();
+                        } else {
+                            throw new Error(data.message || 'Delete failed');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting restaurant:', error);
+                        showNotification('Failed to delete restaurant: ' + error.message, 'error');
+                    });
+            }
+        }
+        
+        function loadUsers() {
+            const search = document.getElementById('user-search').value;
+            const sort = document.getElementById('user-sort').value;
+            const container = document.getElementById('users-list');
+            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading users...</div>';
+            
+            fetch(`admin_get_users.php?search=${encodeURIComponent(search)}&sort=${sort}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    container.innerHTML = '';
+                    if (!data.success) throw new Error(data.message || 'Failed to load users');
+                    if (data.data.length === 0) {
+                        container.innerHTML = '<div class="no-users"><i class="fas fa-user-slash"></i> No users found</div>';
+                        return;
+                    }
+                    data.data.forEach(user => {
+                        const card = document.createElement('div');
+                        card.className = 'user-card';
+                        const photoUrl = user.profile_photo || 'static/images/default-avatar.jpg';
+                        card.innerHTML = `
+                            <div class="user-header">
+                                <div class="profile-photo-container">
+                                    <img src="${photoUrl}" alt="${user.name || user.username}" 
+                                         onerror="this.onerror=null;this.src='static/images/default-avatar.jpg'">
+                                </div>
+                                <div class="user-info">
+                                    <h3>${user.name || 'No name provided'}</h3>
+                                    <p><i class="fas fa-at"></i> ${user.username}</p>
+                                    <p><i class="fas fa-envelope"></i> ${user.email}</p>
+                                </div>
+                                <div class="user-actions">
+                                    <button class="btn btn-primary" onclick="toggleEditUserForm(${user.id}, this)">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <button class="btn btn-danger" onclick="deleteUser(${user.id}, '${user.username}')">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="user-details">
+                                ${user.phone ? `<div class="detail-item"><i class="fas fa-phone"></i> ${user.phone}</div>` : ''}
+                                ${user.address ? `<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ${user.address}</div>` : ''}
+                                <div class="detail-item"><i class="fas fa-calendar-alt"></i> Joined: ${new Date(user.created_at).toLocaleDateString()}</div>
+                            </div>
+                            <div class="edit-user-form" id="edit-user-${user.id}" style="display: none;">
+                                <h4><i class="fas fa-user-edit"></i> Edit User</h4>
+                                <form onsubmit="updateUser(${user.id}); return false;" enctype="multipart/form-data">
+                                    <div class="form-group">
+                                        <label><i class="fas fa-signature"></i> Full Name:</label>
+                                        <input type="text" id="name-${user.id}" value="${user.name || ''}" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-at"></i> Username:</label>
+                                        <input type="text" id="username-${user.id}" value="${user.username}" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-envelope"></i> Email:</label>
+                                        <input type="email" id="email-${user.id}" value="${user.email}" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-phone"></i> Phone:</label>
+                                        <input type="tel" id="phone-${user.id}" value="${user.phone || ''}" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-map-marker-alt"></i> Address:</label>
+                                        <textarea id="address-${user.id}" class="form-control" rows="2">${user.address || ''}</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-lock"></i> New Password:</label>
+                                        <input type="password" id="password-${user.id}" class="form-control" placeholder="Leave blank to keep current" minlength="8">
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fas fa-image"></i> Profile Photo:</label>
+                                        <input type="file" id="photo-${user.id}" name="profile_photo" class="form-control" accept="image/*">
+                                        <small>Current: ${user.profile_photo ? user.profile_photo.split('/').pop() : 'Default'}</small>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="button" class="btn btn-secondary" onclick="toggleEditUserForm(${user.id}, this)">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Save Changes
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading users:', error);
+                    container.innerHTML = `
+                        <div class="error-message">
+                            <p><i class="fas fa-exclamation-circle"></i> Failed to load users</p>
+                            <p>${error.message}</p>
+                            <button onclick="loadUsers()" class="btn btn-retry">
+                                <i class="fas fa-sync"></i> Try Again
+                            </button>
+                        </div>
+                    `;
+                });
+        }
+
+        function toggleEditUserForm(userId, button) {
+            const form = document.getElementById(`edit-user-${userId}`);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function updateUser(userId) {
+            const formData = new FormData();
+            formData.append('id', userId);
+            formData.append('name', document.getElementById(`name-${userId}`).value);
+            formData.append('username', document.getElementById(`username-${userId}`).value);
+            formData.append('email', document.getElementById(`email-${userId}`).value);
+            formData.append('phone', document.getElementById(`phone-${userId}`).value);
+            formData.append('address', document.getElementById(`address-${userId}`).value);
+            const photoInput = document.getElementById(`photo-${userId}`);
+            if (photoInput.files.length > 0) {
+                formData.append('profile_photo', photoInput.files[0]);
+            }
+            const password = document.getElementById(`password-${userId}`).value;
+            if (password) {
+                formData.append('password', password);
+            }
+
+            fetch('admin_update_user.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('User updated successfully', 'success');
+                    loadUsers();
+                } else {
+                    throw new Error(data.message || 'Update failed');
+                }
+            })
+            .catch(error => {
+                console.error('Update error:', error);
+                showNotification(`Failed to update user: ${error.message}`, 'error');
+            });
+        }
+        
+        function deleteUser(userId, username) {
+            if (confirm(`Are you sure you want to permanently delete user "${username}"?`)) {
+                fetch(`admin_delete_user.php?id=${userId}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            showNotification(`User "${username}" deleted successfully`, 'success');
+                            loadUsers();
+                        } else {
+                            throw new Error(data.message || 'Delete failed');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Delete error:', error);
+                        showNotification(`Failed to delete user: ${error.message}`, 'error');
+                    });
+            }
+        }
+        
+        // Helper function to show notifications
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.classList.add('fade-out');
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+
+        // Form submission handler
+        document.getElementById('restaurant-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+            const ownerPassword = document.getElementById('owner-password').value;
+
+            fetch('create_restaurant.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const message = `Restaurant created successfully! ID: ${data.restaurant_id}
+                    Owner credentials:
+                    Email: ${data.owner_email}
+                    Password: ${ownerPassword}
+                    (Please change this password immediately)`;
+                    showNotification(message, 'success');
+                    this.reset();
+                    // Reset categories and offers
+                    const categoriesContainer = document.getElementById('categories-container');
+                    categoriesContainer.innerHTML = '';
+                    categoryCounter = 0; // Reset counter
+                    const offersContainer = document.getElementById('offers-container');
+                    offersContainer.innerHTML = `
+                        <div class="offer-group">
+                            <div class="form-group">
+                                <label><i class="fas fa-align-left"></i> Offer Description:</label>
+                                <textarea name="offer_description[]" rows="2"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-calendar-check"></i> Valid Until:</label>
+                                <input type="date" name="offer_valid_until[]">
+                            </div>
+                            <button type="button" class="btn btn-danger" onclick="removeOffer(this)">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    `;
+                    // Re-initialize with one category
+                    addCategory();
+                    loadRestaurants();
+                    switchTab('manage');
+                } else {
+                    throw new Error(data.message || 'Unknown error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error creating restaurant:', error);
+                showNotification(`Failed to create restaurant: ${error.message}`, 'error');
+            })
+            .finally(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded'); // Debug log
+            // Initialize with one category
+            const categoriesContainer = document.getElementById('categories-container');
+            if (categoriesContainer) {
+                addCategory();
+            } else {
+                console.error('Categories container not found on page load');
+            }
+            loadRestaurants();
+        });
+    </script>
 </body>
 </html>
