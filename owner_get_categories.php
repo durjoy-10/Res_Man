@@ -1,32 +1,72 @@
 <?php
-// owner_get_categories.php
-require_once 'owner_db_connection.php';
-
 header('Content-Type: application/json');
 
+// Database connection
+$conn = new mysqli("localhost", "root", "", "food_delivery");
+if ($conn->connect_error) {
+    error_log("Database connection failed: " . $conn->connect_error);
+    echo json_encode(["success" => false, "message" => "Database connection failed"]);
+    exit();
+}
+
+// Get restaurant ID from query parameter
 $restaurant_id = filter_input(INPUT_GET, 'restaurant_id', FILTER_SANITIZE_NUMBER_INT);
-
-if (!$restaurant_id) {
-    echo json_encode(['success' => false, 'message' => 'Restaurant ID is required']);
-    exit;
+if ($restaurant_id <= 0) {
+    error_log("Invalid restaurant ID: $restaurant_id");
+    echo json_encode(["success" => false, "message" => "Invalid restaurant ID"]);
+    $conn->close();
+    exit();
 }
 
-try {
-    $stmt = $pdo->prepare("SELECT id, name, description FROM menu_categories WHERE restaurant_id = ?");
-    $stmt->execute([$restaurant_id]);
-    $categories = $stmt->fetchAll();
+// Fetch categories
+$stmt = $conn->prepare("SELECT id, name, description FROM categories WHERE restaurant_id = ?");
+if (!$stmt) {
+    error_log("Prepare failed: " . $conn->error);
+    echo json_encode(["success" => false, "message" => "Database query preparation failed"]);
+    $conn->close();
+    exit();
+}
+$stmt->bind_param("i", $restaurant_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
-    $result = [];
-    foreach ($categories as &$category) {
-        $stmt = $pdo->prepare("SELECT id, name, description, price, image_path, stock FROM menu_items WHERE category_id = ?");
-        $stmt->execute([$category['id']]);
-        $category['items'] = $stmt->fetchAll();
-        $result[] = $category;
+$categories = [];
+while ($category = $result->fetch_assoc()) {
+    $category_id = $category['id'];
+    
+    // Fetch items for this category
+    $item_stmt = $conn->prepare("SELECT id, name, description, price, stock, image_path FROM items WHERE category_id = ?");
+    if (!$item_stmt) {
+        error_log("Prepare failed for items: " . $conn->error);
+        continue;
     }
-
-    echo json_encode(['success' => true, 'data' => $result]);
-} catch (Exception $e) {
-    error_log("Error in owner_get_categories.php: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
+    $item_stmt->bind_param("i", $category_id);
+    $item_stmt->execute();
+    $item_result = $item_stmt->get_result();
+    
+    $items = [];
+    while ($item = $item_result->fetch_assoc()) {
+        $items[] = [
+            "id" => $item['id'],
+            "name" => $item['name'] ?? '',
+            "description" => $item['description'] ?? '',
+            "price" => $item['price'] ?? 0.0,
+            "stock" => $item['stock'] ?? 0,
+            "image_path" => $item['image_path'] ?? ''
+        ];
+    }
+    $item_stmt->close();
+    
+    $categories[] = [
+        "id" => $category['id'],
+        "name" => $category['name'] ?? '',
+        "description" => $category['description'] ?? '',
+        "items" => $items
+    ];
 }
+
+echo json_encode(["success" => true, "data" => $categories]);
+
+$stmt->close();
+$conn->close();
 ?>
