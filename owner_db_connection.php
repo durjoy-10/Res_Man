@@ -1,5 +1,4 @@
 <?php
-// owner_db_connection.php
 try {
     $pdo = new PDO("mysql:host=localhost;dbname=restaurant_management_system", "root", "");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

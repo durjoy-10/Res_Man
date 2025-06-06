@@ -28,6 +28,14 @@
             border-radius: 5px;
             margin: 10px 0;
         }
+        .error-message {
+            color: #721c24;
+            background-color: #f8d7da;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            text-align: center;
+        }
         .alert {
             padding: 15px;
             margin: 10px 0;
@@ -49,24 +57,6 @@
             border: none;
             cursor: pointer;
             color: inherit;
-        }
-        .restaurant-info-container {
-            background: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border-left: 4px solid #4CAF50;
-        }
-        .restaurant-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        @media (max-width: 768px) {
-            .restaurant-info-grid {
-                grid-template-columns: 1fr;
-            }
         }
         .category-container {
             background: #fff;
@@ -217,76 +207,94 @@
             </div>
         </div>
 
-        <!-- Restaurant Management Tab -->
+        <!-- Manage Restaurant Tab -->
         <div id="manage-tab" class="tab-content">
             <h2><i class="fas fa-hotel"></i> Manage Restaurant</h2>
-            <div class="tab-content active">
-                <h3><i class="fas fa-hotel"></i> Restaurant Information</h3>
-                <form id="restaurant-form" enctype="multipart/form-data">
-                    <input type="hidden" id="restaurant-id" name="restaurant_id">
-                    <div class="form-group">
-                        <label for="restaurant-id-display"><i class="fas fa-id-badge"></i> Restaurant ID:</label>
-                        <input type="text" id="restaurant-id-display" value="" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label for="restaurant-name"><i class="fas fa-signature"></i> Restaurant Name:</label>
-                        <input type="text" id="restaurant-name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="restaurant-desc"><i class="fas fa-align-left"></i> Description:</label>
-                        <textarea id="restaurant-desc" name="description" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="owner-name"><i class="fas fa-user-tie"></i> Owner Name:</label>
-                        <input type="text" id="owner-name" name="owner_name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="owner-email"><i class="fas fa-envelope"></i> Owner Email:</label>
-                        <input type="email" id="owner-email" name="owner_email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="phone"><i class="fas fa-phone"></i> Phone Number:</label>
-                        <input type="tel" id="phone" name="phone" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="address"><i class="fas fa-map-marker-alt"></i> Address:</label>
-                        <textarea id="address" name="address" rows="3" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="created-at"><i class="fas fa-calendar-plus"></i> Created At:</label>
-                        <input type="text" id="created-at" value="" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label for="updated-at"><i class="fas fa-calendar-check"></i> Updated At:</label>
-                        <input type="text" id="updated-at" value="" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-image"></i> Restaurant Image:</label>
-                        <input type="file" name="restaurant_image" accept="image/*">
-                        <div id="current-image"></div>
-                    </div>
-                    <h4><i class="fas fa-utensils"></i> Menu Categories & Items</h4>
+            <div id="restaurant-management-container">
+                <div class="restaurant-info-section">
+                    <h3><i class="fas fa-info-circle"></i> Restaurant Information</h3>
+                    <form id="restaurant-form" enctype="multipart/form-data">
+                        <input type="hidden" id="restaurant-id" name="restaurant_id" value="">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-signature"></i> Restaurant Name:</label>
+                                <input type="text" id="restaurant-name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-align-left"></i> Description:</label>
+                                <textarea id="restaurant-desc" name="description" rows="3"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-user-tie"></i> Owner Name:</label>
+                                <input type="text" id="owner-name" name="owner_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-envelope"></i> Owner Email:</label>
+                                <input type="email" id="owner-email" name="owner_email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-phone"></i> Phone:</label>
+                                <input type="tel" id="phone" name="phone" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-map-marker-alt"></i> Address:</label>
+                                <textarea id="address" name="address" rows="2" required></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-image"></i> Restaurant Image:</label>
+                            <input type="file" name="restaurant_image" accept="image/*">
+                            <div id="current-image"></div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Restaurant Info
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="menu-management-section">
+                    <h3><i class="fas fa-utensils"></i> Menu Management</h3>
                     <div id="categories-container">
                         <p class="loading">Loading categories...</p>
                     </div>
-                    <button type="button" class="btn btn-secondary" onclick="addCategory('categories-container')">
-                        <i class="fas fa-plus"></i> Add Category
-                    </button>
-                    <h4><i class="fas fa-percentage"></i> Special Offers</h4>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="addCategory('categories-container')">
+                            <i class="fas fa-plus"></i> Add Category
+                        </button>
+                        <button type="submit" form="restaurant-form" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Menu and Offers
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="offers-management-section">
+                    <h3><i class="fas fa-percentage"></i> Special Offers</h3>
                     <div id="offers-container">
                         <p class="loading">Loading offers...</p>
                     </div>
-                    <button type="button" class="btn btn-secondary" onclick="addOffer('offers-container')">
-                        <i class="fas fa-plus"></i> Add Offer
-                    </button>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Save Changes
+                        <button type="button" class="btn btn-secondary" onclick="addOffer('offers-container')">
+                            <i class="fas fa-plus"></i> Add Offer
+                        </button>
+                        <button type="submit" form="restaurant-form" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Menu and Offers
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
+    </div>
 
     <script>
         // Global variables
@@ -297,22 +305,45 @@
 
         // Authentication check
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM fully loaded and parsed');
             const ownerEmail = localStorage.getItem('ownerEmail');
             const isOwnerLoggedIn = localStorage.getItem('ownerLoggedIn') === 'true';
-            const restaurantId = localStorage.getItem('restaurantId');
+            let restaurantId = localStorage.getItem('restaurantId');
             
-            console.log('Owner Email:', ownerEmail, 'Logged In:', isOwnerLoggedIn, 'Restaurant ID:', restaurantId);
-            
+            console.log('Initial localStorage state on dashboard:', {
+                ownerLoggedIn: localStorage.getItem('ownerLoggedIn'),
+                ownerEmail: localStorage.getItem('ownerEmail'),
+                restaurantId: localStorage.getItem('restaurantId')
+            });
+
+            // Validate restaurantId early
+            restaurantId = restaurantId && !isNaN(restaurantId) && parseInt(restaurantId) > 0 ? parseInt(restaurantId) : null;
+            console.log('Validated restaurantId:', restaurantId);
+
             if (!isOwnerLoggedIn || !ownerEmail || !restaurantId) {
-                window.location.href = 'owner_login.html';
+                console.log('Authentication failed, redirecting to login page:', {
+                    isOwnerLoggedIn,
+                    ownerEmail,
+                    restaurantId
+                });
+                showAlert('error', 'Session expired or invalid. Please log in again.');
+                setTimeout(() => {
+                    window.location.href = 'owner_login.html';
+                }, 1000);
                 return;
             }
-        
+
+            // Store validated restaurantId back in localStorage
+            localStorage.setItem('restaurantId', restaurantId);
+            console.log('Proceeding with restaurantId:', restaurantId);
+
+            // Set restaurant_id in the form
+            document.getElementById('restaurant-id').value = restaurantId;
+
             loadRestaurant();
             loadOrders();
             calculateRevenue();
-        
+
+            // Initialize form submission
             initFormSubmission();
         });
 
@@ -320,18 +351,24 @@
             const form = document.getElementById('restaurant-form');
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                const submitBtn = form.querySelector('button[type="submit"]');
+                const submitBtn = e.submitter || form.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
                 submitBtn.disabled = true;
-
+        
                 try {
                     const formData = new FormData(form);
+                    const restaurantId = localStorage.getItem('restaurantId');
+                    
+                    // Validate restaurant_id
+                    if (!restaurantId || isNaN(restaurantId) || parseInt(restaurantId) <= 0) {
+                        throw new Error('Invalid or missing restaurant ID');
+                    }
                     
                     // Add categories and items to formData
                     const categories = document.querySelectorAll('.category-container');
                     categories.forEach((category, catIndex) => {
-                        const categoryId = category.querySelector('input[name="category_id[]"]').value;
+                        const categoryId = category.querySelector('input[name="category_id[]"]')?.value || '';
                         const categoryName = category.querySelector('input[name="category_name[]"]').value;
                         const categoryDesc = category.querySelector('textarea[name="category_description[]"]').value;
                         
@@ -342,17 +379,19 @@
                         // Add items for this category
                         const items = category.querySelectorAll('.menu-item-group');
                         items.forEach((item, itemIndex) => {
-                            const itemId = item.querySelector('input[name^="item_id"]').value;
+                            const itemId = item.querySelector('input[name^="item_id"]')?.value || '';
                             const itemName = item.querySelector('input[name^="item_name"]').value;
                             const itemDesc = item.querySelector('textarea[name^="item_description"]').value;
                             const itemPrice = item.querySelector('input[name^="item_price"]').value;
                             const itemStock = item.querySelector('input[name^="item_stock"]').value;
+                            const itemImagePath = item.querySelector('input[name^="item_image_path"]')?.value || '';
                             
                             formData.append(`item_id[${catIndex}][${itemIndex}]`, itemId);
                             formData.append(`item_name[${catIndex}][${itemIndex}]`, itemName);
                             formData.append(`item_description[${catIndex}][${itemIndex}]`, itemDesc);
                             formData.append(`item_price[${catIndex}][${itemIndex}]`, itemPrice);
                             formData.append(`item_stock[${catIndex}][${itemIndex}]`, itemStock);
+                            formData.append(`item_image_path[${catIndex}][${itemIndex}]`, itemImagePath);
                             
                             // Handle file uploads
                             const fileInput = item.querySelector('input[type="file"]');
@@ -365,7 +404,7 @@
                     // Add offers to formData
                     const offers = document.querySelectorAll('.offer-group');
                     offers.forEach((offer, index) => {
-                        const offerId = offer.querySelector('input[name="offer_id[]"]').value;
+                        const offerId = offer.querySelector('input[name="offer_id[]"]')?.value || '';
                         const offerDesc = offer.querySelector('textarea[name="offer_description[]"]').value;
                         const offerValidUntil = offer.querySelector('input[name="offer_valid_until[]"]').value;
                         
@@ -373,19 +412,20 @@
                         formData.append(`offer_description[${index}]`, offerDesc);
                         formData.append(`offer_valid_until[${index}]`, offerValidUntil);
                     });
-
+        
                     const response = await fetch('owner_update_restaurant.php', {
                         method: 'POST',
                         body: formData
                     });
-
+        
                     const data = await response.json();
-                    console.log('Update Response:', data);
                     
                     if (data.success) {
                         showAlert('success', 'Restaurant updated successfully!');
-                        // Refresh the data
+                        // Refresh the restaurant data
                         loadRestaurant();
+                        loadCategories(restaurantId);
+                        loadOffers(restaurantId);
                     } else {
                         throw new Error(data.message || 'Failed to update restaurant');
                     }
@@ -400,6 +440,7 @@
         }
 
         function logout() {
+            console.log('Logging out, clearing localStorage.');
             localStorage.removeItem('ownerLoggedIn');
             localStorage.removeItem('ownerEmail');
             localStorage.removeItem('restaurantId');
@@ -415,39 +456,30 @@
 
         // Restaurant Management Functions
         function loadRestaurant() {
-            console.log('Loading restaurant data...');
             const restaurantId = localStorage.getItem('restaurantId');
             if (!restaurantId) {
-                console.error('No restaurant ID found in localStorage');
                 showAlert('error', 'Restaurant ID not found. Please log in again.');
                 window.location.href = 'owner_login.html';
                 return;
             }
         
-            document.getElementById('restaurant-id').value = restaurantId;
-            
-            fetch(`owner_get_restaurant.php?restaurant_id=${restaurantId}`)
+            fetch(`owner_get_restaurant.php?id=${restaurantId}`)
                 .then(response => {
-                    console.log('Fetch restaurant response status:', response.status);
-                    if (!response.ok) {
-                        return response.text().then(text => {
-                            throw new Error(`HTTP error! Status: ${response.status}, Response: ${text}`);
-                        });
-                    }
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Fetched restaurant data:', data);
                     if (!data.success) throw new Error(data.message || 'Failed to load restaurant data');
                     
                     const restaurant = data.data;
-                    document.getElementById('restaurant-name-header').textContent = restaurant.name || 'Unnamed Restaurant';
+                    document.getElementById('restaurant-name-header').textContent = restaurant.name || 'My Restaurant';
                     document.getElementById('restaurant-name').value = restaurant.name || '';
                     document.getElementById('restaurant-desc').value = restaurant.description || '';
                     document.getElementById('owner-name').value = restaurant.owner_name || '';
                     document.getElementById('owner-email').value = restaurant.owner_email || '';
                     document.getElementById('phone').value = restaurant.phone || '';
                     document.getElementById('address').value = restaurant.address || '';
+                    document.getElementById('restaurant-id').value = restaurant.id || restaurantId;
                     
                     if (restaurant.image_path) {
                         document.getElementById('current-image').innerHTML = `
@@ -457,16 +489,13 @@
                     } else {
                         document.getElementById('current-image').innerHTML = '<p>No image available</p>';
                     }
-        
-                    loadCategories(restaurantId);
-                    loadOffers(restaurantId);
                 })
                 .catch(error => {
                     console.error('Error loading restaurant:', error);
                     showAlert('error', `Failed to load restaurant: ${error.message}`);
                 });
         }
-
+        
         function loadCategories(restaurantId) {
             const container = document.getElementById('categories-container');
             container.innerHTML = '<p class="loading">Loading categories...</p>';
@@ -478,7 +507,7 @@
                 })
                 .then(data => {
                     container.innerHTML = '';
-                    categoryCounter = 0; // Reset counter
+                    categoryCounter = 0;
                     
                     if (data.success && data.data.length > 0) {
                         data.data.forEach(category => {
@@ -486,8 +515,7 @@
                         });
                     } else {
                         container.innerHTML = '<p class="no-data">No categories found. Add a new category to get started.</p>';
-                        // Add one empty category by default
-                        addCategory('categories-container');
+                        addCategory('categories-container'); // Add empty category by default
                     }
                 })
                 .catch(error => {
@@ -502,7 +530,7 @@
                     `;
                 });
         }
-
+        
         function loadOffers(restaurantId) {
             const container = document.getElementById('offers-container');
             container.innerHTML = '<p class="loading">Loading offers...</p>';
@@ -535,7 +563,19 @@
                     `;
                 });
         }
-
+        
+        // Make sure this is called when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const restaurantId = localStorage.getItem('restaurantId');
+            if (restaurantId) {
+                loadRestaurant();
+                loadCategories(restaurantId);
+                loadOffers(restaurantId);
+            } else {
+                window.location.href = 'owner_login.html';
+            }
+        });
+        
         function addCategory(containerId, categoryData = null) {
             const currentCategoryIndex = categoryCounter++;
             const container = document.getElementById(containerId);
@@ -564,6 +604,7 @@
                     ${categoryData?.items ? categoryData.items.map(item => `
                         <div class="menu-item-group">
                             <input type="hidden" name="item_id[${currentCategoryIndex}][]" value="${item.id || ''}">
+                            <input type="hidden" name="item_image_path[${currentCategoryIndex}][]" value="${item.image_path || ''}">
                             <div class="form-group">
                                 <label><i class="fas fa-hamburger"></i> Item Name:</label>
                                 <input type="text" name="item_name[${currentCategoryIndex}][]" value="${item.name || ''}" required>
@@ -602,7 +643,6 @@
             
             container.appendChild(newCategory);
             
-            // If no items in category data, add one empty item
             if (!categoryData?.items || categoryData.items.length === 0) {
                 addMenuItem(currentCategoryIndex);
             }
@@ -620,6 +660,7 @@
             newItem.className = 'menu-item-group';
             newItem.innerHTML = `
                 <input type="hidden" name="item_id[${categoryIndex}][]" value="">
+                <input type="hidden" name="item_image_path[${categoryIndex}][]" value="">
                 <div class="form-group">
                     <label><i class="fas fa-hamburger"></i> Item Name:</label>
                     <input type="text" name="item_name[${categoryIndex}][]" value="" required>
@@ -663,26 +704,27 @@
                 <input type="hidden" name="offer_id[]" value="${offerData?.id || ''}">
                 <div class="form-group">
                     <label><i class="fas fa-align-left"></i> Offer Description:</label>
-                    <textarea name="offer_description[]" rows="2">${offerData?.description || ''}</textarea>
+                    <textarea name="offer_description[]" rows="2" required>${offerData?.description || ''}</textarea>
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-calendar-check"></i> Valid Until:</label>
-                    <input type="date" name="offer_valid_until[]" value="${offerData?.valid_until || ''}">
+                    <input type="date" name="offer_valid_until[]" value="${offerData?.valid_until || ''}" required>
                 </div>
-                <button type="button" class="btn btn-danger" onclick="removeOffer(this.parentElement.parentElement)">
+                <button type="button" class="btn btn-danger" onclick="removeOffer(this.parentElement)">
                     <i class="fas fa-trash"></i> Remove Offer
                 </button>
             `;
             container.appendChild(newOffer);
         }
 
-        function removeOffer(button) {
-            button.closest('.offer-group').remove();
+        function removeOffer(offerElement) {
+            if (confirm('Are you sure you want to remove this offer?')) {
+                offerElement.remove();
+            }
         }
 
         // Helper Functions
         function showAlert(type, message) {
-            // Remove any existing alerts
             const existingAlerts = document.querySelectorAll('.alert');
             existingAlerts.forEach(alert => alert.remove());
             
@@ -703,7 +745,6 @@
                 document.body.prepend(alertDiv);
             }
             
-            // Auto-remove after 5 seconds
             setTimeout(() => {
                 alertDiv.remove();
             }, 5000);
@@ -716,6 +757,15 @@
             const search = document.getElementById('order-search').value;
             const container = document.getElementById('orders-list');
             container.innerHTML = '<div class="loading">Loading orders...</div>';
+
+            if (!restaurantId || isNaN(restaurantId) || parseInt(restaurantId) <= 0) {
+                console.error('Failed to load orders due to invalid restaurant ID:', restaurantId);
+                container.innerHTML = '<p class="error-message">Invalid restaurant ID. Please log in again.</p>';
+                setTimeout(() => {
+                    window.location.href = 'owner_login.html';
+                }, 1000);
+                return;
+            }
 
             fetch(`owner_get_orders.php?restaurant_id=${restaurantId}&status=${status}&search=${encodeURIComponent(search)}`)
                 .then(response => {
@@ -798,23 +848,23 @@
                     </button>
                 `,
                 confirmed: `
-                    <button class="btn btn-process" onclick="updateOrderStatus(${orderId}, 'preparing')">
+                    <button class="btn btn-primary" onclick="updateOrderStatus(${orderId}, 'preparing')">
                         <i class="fas fa-spinner"></i> Start Preparing
                     </button>
-                    <button class="btn btn-cancel" onclick="updateOrderStatus(${orderId}, 'cancelled')">
+                    <button class="btn btn-secondary" onclick="updateOrderStatus(${orderId}, 'cancelled')">
                         <i class="fas fa-times"></i> Cancel Order
                     </button>
                 `,
                 preparing: `
-                    <button class="btn btn-process" onclick="updateOrderStatus(${orderId}, 'out_for_delivery')">
+                    <button class="btn btn-primary" onclick="updateOrderStatus(${orderId}, 'out_for_delivery')">
                         <i class="fas fa-truck"></i> Out for Delivery
                     </button>
-                    <button class="btn btn-cancel" onclick="updateOrderStatus(${orderId}, 'cancelled')">
+                    <button class="btn btn-secondary" onclick="updateOrderStatus(${orderId}, 'cancelled')">
                         <i class="fas fa-times"></i> Cancel Order
                     </button>
                 `,
                 out_for_delivery: `
-                    <button class="btn btn-deliver" onclick="updateOrderStatus(${orderId}, 'delivered')">
+                    <button class="btn btn-success" onclick="updateOrderStatus(${orderId}, 'delivered')">
                         <i class="fas fa-check-circle"></i> Mark as Delivered
                     </button>
                 `,
@@ -826,9 +876,12 @@
 
         function updateOrderStatus(orderId, newStatus) {
             const restaurantId = localStorage.getItem('restaurantId');
-            if (!restaurantId) {
-                showAlert('error', 'Restaurant ID not found. Please log in again.');
-                window.location.href = 'owner_login.html';
+            if (!restaurantId || isNaN(restaurantId) || parseInt(restaurantId) <= 0) {
+                console.error('Invalid restaurant ID for order status update:', restaurantId);
+                showAlert('error', 'Invalid restaurant ID. Please log in again.');
+                setTimeout(() => {
+                    window.location.href = 'owner_login.html';
+                }, 1000);
                 return;
             }
 
@@ -890,6 +943,15 @@
 
         function calculateRevenue() {
             const restaurantId = localStorage.getItem('restaurantId');
+            if (!restaurantId || isNaN(restaurantId) || parseInt(restaurantId) <= 0) {
+                console.error('Failed to calculate revenue due to invalid restaurant ID:', restaurantId);
+                showAlert('error', 'Invalid restaurant ID. Please log in again.');
+                setTimeout(() => {
+                    window.location.href = 'owner_login.html';
+                }, 1000);
+                return;
+            }
+
             fetch(`owner_get_orders.php?restaurant_id=${restaurantId}&status=delivered&month=${currentMonth}&year=${currentYear}`)
                 .then(response => {
                     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);

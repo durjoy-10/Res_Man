@@ -10,19 +10,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
-$order_id = filter_var($input['order_id'] ?? '', FILTER_SANITIZE_NUMBER_INT);
+$order_id = filter_var($input['order_id'] ?? '', FILTER_VALIDATE_INT);
 $new_status = filter_var($input['status'] ?? '', FILTER_SANITIZE_STRING);
-$restaurant_id = filter_var($input['restaurant_id'] ?? '', FILTER_SANITIZE_NUMBER_INT);
+$restaurant_id = filter_var($input['restaurant_id'] ?? '', FILTER_VALIDATE_INT);
 
 $valid_statuses = ['pending', 'confirmed', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'];
 
-if (!$order_id || !is_numeric($order_id)) {
-    error_log("Invalid order_id: $order_id");
+if (!$order_id || $order_id <= 0) {
+    error_log("Invalid order_id: " . ($order_id ?? 'null'));
     echo json_encode(['success' => false, 'message' => 'Invalid order ID']);
     exit;
 }
-if (!$restaurant_id || !is_numeric($restaurant_id)) {
-    error_log("Invalid restaurant_id: $restaurant_id");
+if (!$restaurant_id || $restaurant_id <= 0) {
+    error_log("Invalid restaurant_id: " . ($restaurant_id ?? 'null'));
     echo json_encode(['success' => false, 'message' => 'Invalid restaurant ID']);
     exit;
 }

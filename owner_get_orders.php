@@ -4,13 +4,14 @@ require_once 'owner_db_connection.php';
 
 header('Content-Type: application/json');
 
-$restaurant_id = filter_input(INPUT_GET, 'restaurant_id', FILTER_SANITIZE_NUMBER_INT);
+$restaurant_id = filter_input(INPUT_GET, 'restaurant_id', FILTER_VALIDATE_INT);
 $status = filter_input(INPUT_GET, 'status', FILTER_SANITIZE_STRING);
 $search = filter_input(INPUT_GET, 'search', FILTER_SANITIZE_STRING);
 $month = filter_input(INPUT_GET, 'month', FILTER_SANITIZE_NUMBER_INT);
 $year = filter_input(INPUT_GET, 'year', FILTER_SANITIZE_NUMBER_INT);
 
-if (!$restaurant_id) {
+if (!$restaurant_id || $restaurant_id <= 0) {
+    error_log("Invalid restaurant ID: " . ($restaurant_id ?? 'null'));
     echo json_encode([]);
     exit;
 }
