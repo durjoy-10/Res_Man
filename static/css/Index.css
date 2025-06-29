@@ -191,8 +191,8 @@ a:hover::after {
 /* Restaurant Details Image - Larger Size */
 /* ---------------------- */
 .restaurant-details img {
-    width: 100%;
-    max-height: 400px;
+    width: 60%;
+    max-height: 600px;
     object-fit: cover;
     border-radius: 15px;
     margin: 20px 0;
@@ -251,7 +251,7 @@ a:hover::after {
 /* index Page Container */
 /* ---------------------- */
 .container {
-    max-width: 1700px;
+    max-width: 1500px;
     margin: 3rem auto;
     padding: 3rem;
     background: white;
@@ -345,8 +345,8 @@ h2.restaurant-name {
     position: fixed;
     left: 0;
     top: 0px;
-    width: 260px;
-    height: 1000px;
+    width: 200px;
+    height: 2000px;
     background: linear-gradient(180deg, #2c3e50, #34495e);
     border-right: 3px solid #ffd166;
     overflow-y: auto;
@@ -1008,3 +1008,59 @@ textarea {
 .signup-btn:hover {
     background-color: #4a1da3;
 }
+
+
+
+.search-container {
+    display: flex;
+    margin: 15px 0 15px 100px; /* top right bottom left - adjust 50px as needed */
+    width: 600px;
+}
+
+#restaurant-search {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px 0 0 5px;
+    font-size: 16px;
+}
+
+.search-container button {
+    padding: 10px 15px;
+    background-color: #5f27cd;
+    color: white;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.search-container button:hover {
+    background-color: #4a1da0;
+}
+
+.no-results {
+    text-align: center;
+    padding: 20px;
+    color: #ff6b6b;
+    font-size: 18px;
+    width: 100%;
+}
+
+
+
+ .payment-options {
+            margin-top: 10px;
+        }
+        .payment-fields {
+            display: none;
+            margin-top: 10px;
+        }
+        .payment-fields.active {
+            display: block;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+        }

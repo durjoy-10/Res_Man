@@ -8,27 +8,16 @@
     <link rel="stylesheet" href="static/css/Index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="static/css/cart.css">
-    <style>
-        .payment-options {
-            margin-top: 10px;
-        }
-        .payment-fields {
-            display: none;
-            margin-top: 10px;
-        }
-        .payment-fields.active {
-            display: block;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-        }
-    </style>
+
 </head>
 <body>
     <header>
-        <h1>Restaurant Management System</h1>
+        <h1>Food Zone Barishal</h1>
+
+        <div class="search-container">
+            <input type="text" id="restaurant-search" placeholder="Search restaurants by name..." 
+                   oninput="handleSearchInput()" onkeydown="clearSearchIfEmpty(event)">
+        </div>
         <nav>
             <a href="index.php">Home</a>
             <a href="cooking_video.html">Cooking Videos</a>
@@ -356,12 +345,161 @@
     ?>
     
     <script>
-        // Cart functionality
+       
+
+        // Store the original restaurant list and references
+        let originalRestaurants = [];
+        let restaurantCards = [];
+        let searchTimeout;
+        
+        // Initialize the search functionality when page loads
+        function initializeSearch() {
+            const restaurantContainer = document.querySelector('.restaurants-horizontal-scroll');
+            if (restaurantContainer) {
+                restaurantCards = Array.from(restaurantContainer.querySelectorAll('.restaurant-card-horizontal'));
+                originalRestaurants = restaurantCards.map(card => card.cloneNode(true));
+            }
+            
+            // Add event listeners
+            const searchInput = document.getElementById('restaurant-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', handleSearchInput);
+                searchInput.addEventListener('keydown', clearSearchIfEmpty);
+            }
+        }
+        
+        // Handle search input with debouncing
+        function handleSearchInput() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchTerm = document.getElementById('restaurant-search').value.trim().toLowerCase();
+                
+                if (document.getElementById('restaurant-id')) {
+                    searchMenuItems(searchTerm);
+                } else {
+                    searchRestaurants(searchTerm);
+                }
+            }, 300);
+        }
+        
+        // Clear search immediately when field becomes empty
+        function clearSearchIfEmpty(event) {
+            if ((event.key === 'Backspace' || event.key === 'Delete') && 
+                document.getElementById('restaurant-search').value.trim() === '') {
+                clearTimeout(searchTimeout);
+                handleSearchInput(); // Process immediately
+            }
+        }
+        
+        // Search restaurants by name
+        function searchRestaurants(searchTerm) {
+            const restaurantContainer = document.querySelector('.restaurants-horizontal-scroll');
+            if (!restaurantContainer) return;
+        
+            // Clear any existing "no results" message
+            const existingMessage = restaurantContainer.querySelector('.no-results');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+        
+            if (!searchTerm) {
+                // Restore original restaurants
+                restaurantContainer.innerHTML = '';
+                originalRestaurants.forEach(card => {
+                    restaurantContainer.appendChild(card.cloneNode(true));
+                });
+                // Update our references
+                restaurantCards = Array.from(restaurantContainer.querySelectorAll('.restaurant-card-horizontal'));
+                return;
+            }
+        
+            let found = false;
+            restaurantCards.forEach(card => {
+                const restaurantName = card.querySelector('h3').textContent.toLowerCase();
+                if (restaurantName.includes(searchTerm)) {
+                    card.style.display = 'block';
+                    found = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        
+            if (!found) {
+                restaurantContainer.innerHTML = '<p class="no-results">No restaurants found matching your search.</p>';
+            }
+        }
+        
+        // Search menu items when viewing a restaurant
+        function searchMenuItems(searchTerm) {
+            const menuItems = document.querySelectorAll('.menu-item');
+            if (!menuItems.length) return;
+        
+            // Clear any existing "no results" message
+            const existingMessage = document.querySelector('.no-results');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+        
+            if (!searchTerm) {
+                // Show all menu items
+                menuItems.forEach(item => {
+                    item.style.display = 'flex';
+                });
+                return;
+            }
+        
+            let found = false;
+            menuItems.forEach(item => {
+                const itemName = item.querySelector('h4').textContent.toLowerCase();
+                if (itemName.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                    found = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        
+            if (!found) {
+                const menuContainer = document.querySelector('.restaurant-content') || document.querySelector('.menu-items-grid');
+                if (menuContainer) {
+                    const noResults = document.createElement('p');
+                    noResults.className = 'no-results';
+                    noResults.textContent = 'No menu items found matching your search.';
+                    menuContainer.appendChild(noResults);
+                }
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSearch();
+            
+            // Other initialization code...
+            if (restaurantId) {
+                fetchStockData();
+            }
+            
+            // Image error handling
+            document.querySelectorAll('img').forEach(img => {
+                img.onerror = function() {
+                    const container = document.createElement('div');
+                    if (this.classList.contains('menu-item-image')) {
+                        container.className = 'menu-item-default-image default-image';
+                        container.innerHTML = '<i class="fas fa-utensils"></i>';
+                    } else {
+                        container.className = 'restaurant-card-default-image default-image';
+                        container.innerHTML = '<i class="fas fa-store"></i>';
+                    }
+                    this.replaceWith(container);
+                };
+            });
+        });
+        
+        // Cart and other existing functions remain the same...
         let cart = [];
         const restaurantId = document.getElementById('restaurant-id') ? document.getElementById('restaurant-id').value : null;
         let stockData = {};
-
-        // Fetch stock data for all items
+        
         function fetchStockData() {
             fetch('get_menu_items_stock.php?restaurant_id=' + restaurantId)
                 .then(response => response.json())
@@ -377,7 +515,9 @@
                     console.error('Error fetching stock data:', error);
                 });
         }
-
+        
+        // ... rest of your existing cart and other functions ...
+        
         function toggleCart() {
             const cartContainer = document.getElementById('cart-container');
             cartContainer.style.display = cartContainer.style.display === 'block' ? 'none' : 'block';
