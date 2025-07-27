@@ -5,15 +5,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Management System</title>
-    <link rel="stylesheet" href="static/css/Index.css">
+    <link rel="stylesheet" href="static/css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="static/css/cart.css">
-
+    <style>
+        .offers-section {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .offers-section.open {
+            display: block;
+        }
+        .offer-card {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+        .offer-card:hover {
+            transform: translateY(-5px);
+        }
+        .offer-card h4 {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .offer-card p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        .offer-card .valid-until {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
     <header>
         <h1>Food Zone Barishal</h1>
-
         <div class="search-container">
             <input type="text" id="restaurant-search" placeholder="Search restaurants by name..." 
                    oninput="handleSearchInput()" onkeydown="clearSearchIfEmpty(event)">
@@ -25,7 +61,6 @@
             <a href="contact.html">Contact</a>
             <a href="reviews.php">Reviews</a>
             <?php if (is_logged_in()): ?>
-                <!-- Profile Dropdown -->
                 <div class="profile-dropdown">
                     <div class="profile-icon" onclick="toggleProfileDropdown()">
                         <i class="fas fa-user-circle"></i>
@@ -36,7 +71,6 @@
                             <p><?php echo htmlspecialchars($user['email']); ?></p>
                         </div>
                         <a href="profile.php"><i class="fas fa-user"></i> My Profile</a>
-                        <a href="change_password.php"><i class="fas fa-key"></i> Change Password</a>
                         <a href="order_history.php"><i class="fas fa-history"></i> Order History</a>
                         <button class="logout-btn" onclick="window.location.href='logout.php'">
                             <i class="fas fa-sign-out-alt"></i> Logout
@@ -44,34 +78,29 @@
                     </div>
                 </div>
             <?php else: ?>
-                    <a href="login.html" class="login-btn">Login</a>
-                    <a href="signup.html" class="signup-btn">Sign Up</a>
+                <a href="login.html" class="login-btn">Login</a>
+                <a href="signup.html" class="signup-btn">Sign Up</a>
             <?php endif; ?>
         </nav>
     </header>
 
-    <!-- Cart Icon -->
     <div class="cart-icon" onclick="toggleCart()">
         <i class="fas fa-shopping-cart"></i>
         <span class="cart-count" id="cart-count">0</span>
     </div>
     
-    <!-- Cart Container -->
     <div class="cart-container" id="cart-container">
         <div class="cart-header">
             <h3>Your Order</h3>
             <i class="fas fa-times" onclick="toggleCart()" style="cursor:pointer;"></i>
         </div>
-        <div class="cart-items" id="cart-items">
-            <!-- Cart items will be added here dynamically -->
-        </div>
+        <div class="cart-items" id="cart-items"></div>
         <div class="cart-total">
-            Total: $<span id="cart-total">0.00</span>
+            Total: ৳<span id="cart-total">0.00</span>
         </div>
         <button class="checkout-btn" onclick="showCheckoutForm()">Proceed to Checkout</button>
     </div>
     
-    <!-- Checkout Form (initially hidden) -->
     <div id="checkout-form-container" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center;">
         <div style="background:white; padding:20px; border-radius:10px; width:500px; max-width:90%;">
             <h2>Checkout</h2>
@@ -110,7 +139,6 @@
     <?php
     require 'db_connection.php';
     
-    // Get user details
     $user_stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
     $user_stmt->execute([$_SESSION['user_id']]);
     $user = $user_stmt->fetch();
@@ -172,10 +200,8 @@
             echo '<p><i class="fas fa-map-marker-alt"></i> ' . htmlspecialchars($restaurant['address']) . '</p>';
 
             // Sidebar with menu sections
-            echo '<div class="sidebar" id="sidebar">';
-            echo '<h3 style="text-align: center; padding: 15px;color:rgb margin: 0;
-                            color:rgb(219, 101, 21); border-bottom: 1px solid #ddd;">Menu Sections
-                  </h3>';
+            echo '<div class="sidebar" id="menu-sidebar">';
+            echo '<h3 style="text-align: center; padding: 15px; color: rgb(219, 101, 21); border-bottom: 1px solid #ddd;">Menu</h3>';
             
             $stmt = $pdo->prepare("SELECT * FROM menu_categories WHERE restaurant_id = ?");
             $stmt->execute([$restaurant_id]);
@@ -191,7 +217,28 @@
                 echo '<div style="padding: 15px;">No categories available</div>';
             }
             echo '</div>';
+
+            // Offers sidebar
+            echo '<div class="sidebar" id="offers-sidebar">';
+            echo '<h3 style="text-align: center; padding: 15px; color: rgb(219, 101, 21); border-bottom: 1px solid #ddd;">Offers</h3>';
             
+            $stmt = $pdo->prepare("SELECT * FROM offers WHERE restaurant_id = ?");
+            $stmt->execute([$restaurant_id]);
+            $offers = $stmt->fetchAll();
+            
+            if ($offers) {
+                foreach ($offers as $offer) {
+                    echo '<div class="sidebar-offer" onclick="scrollToOffer(' . $offer['id'] . ')">';
+                    echo htmlspecialchars($offer['description']);
+                    echo '<span class="valid-until">Valid until: ' . htmlspecialchars($offer['valid_until']) . '</span>';
+                    echo '</div>';
+                }
+            } else {
+                echo '<div style="padding: 15px;">No offers available</div>';
+            }
+            echo '</div>';
+            echo '</div>';
+
             // Main restaurant content
             echo '<div class="restaurant-container">';
             echo '<div class="restaurant-content">';
@@ -201,18 +248,16 @@
             $categories = $stmt->fetchAll();
                  
             if ($categories) {
-                echo '<h3 style="background: linear-gradient(45deg, #ff6b6b, #5f27cd, #1dd1a1);
-                                 background-clip: text; color: transparent; 
-                                 font-size: 2rem; font-weight: 700; text-align: left;" >
-                      Menu</h3>';
+                echo '<h3 style="background: linear-gradient(45deg, #ff6b6b, #5f27cd, #1dd1a1); background-clip: text; color: transparent; font-size: 2rem; font-weight: 700; text-align: left;">Menu</h3>';
 
-                // View Menu button to toggle sidebar
+                echo '<div style="display: flex; gap: 10px; margin-bottom: 20px;">';
+                
                 echo '<button class="view-menu-btn" onclick="toggleSidebar()" style="
                     border: none; 
-                    background-color:rgb(199, 68, 133); 
+                    background-color: rgb(199, 68, 133); 
                     padding: 10px 15px; 
                     cursor: pointer; 
-                    width: 15%; 
+                    width: auto; 
                     text-align: center; 
                     border-radius: 8px;
                     transition: background-color 0.3s;
@@ -221,15 +266,50 @@
                     align-items: center;
                     gap: 10px;">';
                 
-                echo '<i class="fas fa-bars" style="
-                    font-size: 18px; 
-                    color: #5f27cd; 
-                    transition: transform 0.3s;"></i>';
-                
+                echo '<i class="fas fa-bars" style="font-size: 18px; color: #5f27cd; transition: transform 0.3s;"></i>';
                 echo '<span style="color: #333; font-size: 16px;">Menu Sections</span>';
-                
                 echo '</button>';
+
+                echo '<button class="view-offers-btn" onclick="toggleOffersSection()" style="
+                    border: none; 
+                    background-color: rgb(199, 68, 133); 
+                    padding: 10px 15px; 
+                    cursor: pointer; 
+                    width: auto; 
+                    text-align: center; 
+                    border-radius: 8px;
+                    transition: background-color 0.3s;
+                    font-family: Arial, sans-serif;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;">';
                 
+                echo '<i class="fas fa-gift" style="font-size: 18px; color: #5f27cd; transition: transform 0.3s;"></i>';
+                echo '<span style="color: #333; font-size: 16px;">View Offers</span>';
+                echo '</button>';
+
+                echo '</div>';
+
+                // Offers section below the button
+                echo '<div class="offers-section" id="offers-section">';
+                $stmt = $pdo->prepare("SELECT * FROM offers WHERE restaurant_id = ?");
+                $stmt->execute([$restaurant_id]);
+                $offers = $stmt->fetchAll();
+                if ($offers) {
+                    foreach ($offers as $offer) {
+                        echo '<div class="offer-card">';
+                        echo '<h4>' . htmlspecialchars($offer['description']) . '</h4>';
+                        if (isset($offer['discount']) && $offer['discount'] !== null && $offer['discount'] !== '') {
+                            echo '<p>Discount: ' . htmlspecialchars($offer['discount']) . '%</p>';
+                        }
+                        echo '<div class="valid-until">Valid until: ' . htmlspecialchars($offer['valid_until']) . '</div>';
+                        echo '</div>';
+                    }
+                } else {
+                    echo '<p style="text-align: center; color: #7f8c8d;">No offers available at the moment.</p>';
+                }
+                echo '</div>';
+
                 foreach ($categories as $index => $category) {
                     $colorClass = ['primary', 'success', 'warning', 'danger', 'purple', 'teal'][$index % 6];
                     echo '<div class="menu-category">';
@@ -258,9 +338,8 @@
                             echo '<div class="menu-item-details">';
                             echo '<h4>' . htmlspecialchars($item['name']) . '</h4>';
                             echo '<p>' . htmlspecialchars($item['description']) . '</p>';
-                            echo '<p class="menu-item-price">$' . number_format($item['price'], 2) . '</p>';
+                            echo '<p class="menu-item-price"> ৳' . number_format($item['price'], 2) . '</p>';
                             
-                            // Display stock
                             echo '<p class="menu-item-stock">';
                             if ($item['stock'] > 0) {
                                 echo '<i class="fas fa-box"></i> In Stock: ' . $item['stock'];
@@ -269,7 +348,6 @@
                             }
                             echo '</p>';
                             
-                            // Add to cart button
                             if ($item['stock'] > 0) {
                                 echo '<button class="add-to-cart-btn" onclick="addToCart(' . $item['id'] . ', \'' . htmlspecialchars(addslashes($item['name'])) . '\', ' . $item['price'] . ', ' . $item['stock'] . ')">';
                                 echo '<i class="fas fa-plus"></i> Add to Order';
@@ -299,8 +377,8 @@
             echo '</div>';
             echo '</div>';
             
-            // Add hidden field for restaurant ID
             echo '<input type="hidden" id="restaurant-id" value="' . $restaurant_id . '">';
+            echo '<input type="hidden" id="restaurant-name" value="' . htmlspecialchars($restaurant['name']) . '">';
         } else {
             echo '<div class="container"><p>Restaurant not found.</p></div>';
         }
@@ -309,7 +387,7 @@
         <div class="container">
             <div class="restaurants-container">
                 <div class="section-title">
-                    <h2>All Restaurants</h2>
+                    <h2>The List of Restaurants</h2>
                 </div>
                 
                 <div class="restaurants-horizontal-scroll" id="restaurants-horizontal">
@@ -345,14 +423,10 @@
     ?>
     
     <script>
-       
-
-        // Store the original restaurant list and references
         let originalRestaurants = [];
         let restaurantCards = [];
         let searchTimeout;
         
-        // Initialize the search functionality when page loads
         function initializeSearch() {
             const restaurantContainer = document.querySelector('.restaurants-horizontal-scroll');
             if (restaurantContainer) {
@@ -360,7 +434,6 @@
                 originalRestaurants = restaurantCards.map(card => card.cloneNode(true));
             }
             
-            // Add event listeners
             const searchInput = document.getElementById('restaurant-search');
             if (searchInput) {
                 searchInput.addEventListener('input', handleSearchInput);
@@ -368,12 +441,10 @@
             }
         }
         
-        // Handle search input with debouncing
         function handleSearchInput() {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 const searchTerm = document.getElementById('restaurant-search').value.trim().toLowerCase();
-                
                 if (document.getElementById('restaurant-id')) {
                     searchMenuItems(searchTerm);
                 } else {
@@ -382,33 +453,28 @@
             }, 300);
         }
         
-        // Clear search immediately when field becomes empty
         function clearSearchIfEmpty(event) {
             if ((event.key === 'Backspace' || event.key === 'Delete') && 
                 document.getElementById('restaurant-search').value.trim() === '') {
                 clearTimeout(searchTimeout);
-                handleSearchInput(); // Process immediately
+                handleSearchInput();
             }
         }
         
-        // Search restaurants by name
         function searchRestaurants(searchTerm) {
             const restaurantContainer = document.querySelector('.restaurants-horizontal-scroll');
             if (!restaurantContainer) return;
         
-            // Clear any existing "no results" message
             const existingMessage = restaurantContainer.querySelector('.no-results');
             if (existingMessage) {
                 existingMessage.remove();
             }
         
             if (!searchTerm) {
-                // Restore original restaurants
                 restaurantContainer.innerHTML = '';
                 originalRestaurants.forEach(card => {
                     restaurantContainer.appendChild(card.cloneNode(true));
                 });
-                // Update our references
                 restaurantCards = Array.from(restaurantContainer.querySelectorAll('.restaurant-card-horizontal'));
                 return;
             }
@@ -429,19 +495,16 @@
             }
         }
         
-        // Search menu items when viewing a restaurant
         function searchMenuItems(searchTerm) {
             const menuItems = document.querySelectorAll('.menu-item');
             if (!menuItems.length) return;
         
-            // Clear any existing "no results" message
             const existingMessage = document.querySelector('.no-results');
             if (existingMessage) {
                 existingMessage.remove();
             }
         
             if (!searchTerm) {
-                // Show all menu items
                 menuItems.forEach(item => {
                     item.style.display = 'flex';
                 });
@@ -470,16 +533,11 @@
             }
         }
         
-        // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
             initializeSearch();
-            
-            // Other initialization code...
             if (restaurantId) {
                 fetchStockData();
             }
-            
-            // Image error handling
             document.querySelectorAll('img').forEach(img => {
                 img.onerror = function() {
                     const container = document.createElement('div');
@@ -495,9 +553,9 @@
             });
         });
         
-        // Cart and other existing functions remain the same...
         let cart = [];
         const restaurantId = document.getElementById('restaurant-id') ? document.getElementById('restaurant-id').value : null;
+        const restaurantName = document.getElementById('restaurant-name') ? document.getElementById('restaurant-name').value : 'Unknown Restaurant';
         let stockData = {};
         
         function fetchStockData() {
@@ -516,8 +574,6 @@
                 });
         }
         
-        // ... rest of your existing cart and other functions ...
-        
         function toggleCart() {
             const cartContainer = document.getElementById('cart-container');
             cartContainer.style.display = cartContainer.style.display === 'block' ? 'none' : 'block';
@@ -532,18 +588,15 @@
                 return;
             <?php endif; ?>
             
-            // Check stock from stockData
             const currentStock = stockData[itemId] !== undefined ? stockData[itemId] : stock;
             if (currentStock <= 0) {
                 alert('This item is out of stock!');
                 return;
             }
 
-            // Check if item already in cart
             const existingItem = cart.find(item => item.id === itemId);
             
             if (existingItem) {
-                // Check if adding more exceeds stock
                 if (existingItem.quantity + 1 > currentStock) {
                     alert('Cannot add more of this item. Stock limit reached!');
                     return;
@@ -559,7 +612,7 @@
             }
             
             updateCartDisplay();
-            toggleCart(); // Show cart when adding an item
+            toggleCart();
         }
         
         function updateCartItem(itemId, change) {
@@ -589,11 +642,9 @@
             const cartCountElement = document.getElementById('cart-count');
             const cartTotalElement = document.getElementById('cart-total');
             
-            // Update cart count
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
             cartCountElement.textContent = totalItems;
             
-            // Update cart items display
             cartItemsContainer.innerHTML = '';
             
             if (cart.length === 0) {
@@ -613,7 +664,7 @@
                 itemElement.innerHTML = `
                     <div>
                         <strong>${item.name}</strong>
-                        <div>$${item.price.toFixed(2)} x ${item.quantity}</div>
+                        <div>৳${item.price.toFixed(2)} x ${item.quantity}</div>
                     </div>
                     <div class="cart-item-controls">
                         <button onclick="updateCartItem(${item.id}, -1)">-</button>
@@ -640,7 +691,6 @@
                 return;
             }
             
-            // Check stock before proceeding to checkout
             let stockCheckPassed = true;
             let stockCheckMessage = '';
             cart.forEach(item => {
@@ -658,7 +708,6 @@
 
             document.getElementById('checkout-form-container').style.display = 'flex';
             document.getElementById('checkout-restaurant-id').value = restaurantId;
-            // Reset payment fields visibility
             togglePaymentFields();
         }
         
@@ -683,24 +732,24 @@
             }
         }
 
-        // Handle checkout form submission
         document.getElementById('checkout-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
             const orderData = {
                 restaurant_id: restaurantId,
+                restaurant_name: restaurantName,
                 items: cart,
                 delivery_address: formData.get('delivery_address'),
                 special_instructions: formData.get('special_instructions'),
                 payment_method: formData.get('payment_method'),
                 payment_number: formData.get('payment_method') === 'cash_on_delivery' ? null : formData.get('payment_number'),
-                transaction_id: formData.get('payment_method') === 'cash_on_delivery' ? null : formData.get('transaction_id')
+                transaction_id: formData.get('payment_method') === 'cash_on_delivery' ? null : formData.get('transaction_id'),
+                user_email: '<?php echo $user["email"]; ?>',
+                user_name: '<?php echo $user["name"]; ?>',
+                total: parseFloat(document.getElementById('cart-total').textContent)
             };
 
-            // Log the order data for debugging
-            console.log('Order data being sent:', orderData);
-            
             fetch('process_order.php', {
                 method: 'POST',
                 headers: {
@@ -710,10 +759,8 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Order response:', data);
                 if (data.success) {
                     alert('Order placed successfully! Order ID: ' + data.order_id);
-                    // Update stock locally
                     cart.forEach(item => {
                         if (stockData[item.id] !== undefined) {
                             stockData[item.id] -= item.quantity;
@@ -722,7 +769,6 @@
                     cart = [];
                     updateCartDisplay();
                     hideCheckoutForm();
-                    // Reload the page to reflect updated stock
                     window.location.reload();
                 } else {
                     throw new Error(data.message || 'Failed to place order');
@@ -735,26 +781,49 @@
         });
         
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
+            const menuSidebar = document.getElementById('menu-sidebar');
+            if (menuSidebar) {
+                menuSidebar.classList.toggle('open');
+            }
         }
-
+        
         function scrollToCategory(categoryId) {
             const categoryElement = document.querySelector(`[data-category-id="${categoryId}"]`);
             if (categoryElement) {
                 categoryElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                // Highlight the active category
                 document.querySelectorAll('.sidebar-category').forEach(el => el.classList.remove('active'));
                 document.querySelector(`.sidebar-category[onclick="scrollToCategory(${categoryId})"]`).classList.add('active');
             }
         }
+        
+        function toggleOffersSidebar() {
+            const offersSidebar = document.getElementById('offers-sidebar');
+            if (offersSidebar) {
+                offersSidebar.classList.toggle('open');
+            }
+        }
+        
+        function scrollToOffer(offerId) {
+            const offerElement = document.querySelector(`[data-offer-id="${offerId}"]`);
+            if (offerElement) {
+                offerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.querySelectorAll('.sidebar-offer').forEach(el => el.classList.remove('active'));
+                document.querySelector(`.sidebar-offer[onclick="scrollToOffer(${offerId})"]`).classList.add('active');
+            }
+            toggleOffersSidebar();
+        }
 
+        function toggleOffersSection() {
+            const offersSection = document.getElementById('offers-section');
+            if (offersSection) {
+                offersSection.classList.toggle('open');
+            }
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
-            // Fetch stock data on page load if viewing a restaurant
             if (restaurantId) {
                 fetchStockData();
             }
-
-            // Image error handling
             document.querySelectorAll('img').forEach(img => {
                 img.onerror = function() {
                     const container = document.createElement('div');
@@ -768,14 +837,16 @@
                     this.replaceWith(container);
                 };
             });
-
-            // Close sidebar when clicking outside (for mobile)
             if (window.innerWidth <= 768) {
                 document.addEventListener('click', function(event) {
-                    const sidebar = document.getElementById('sidebar');
+                    const menuSidebar = document.getElementById('menu-sidebar');
+                    const offersSidebar = document.getElementById('offers-sidebar');
                     const viewMenuBtn = document.querySelector('.view-menu-btn');
-                    if (!sidebar.contains(event.target) && event.target !== viewMenuBtn && !viewMenuBtn.contains(event.target)) {
-                        sidebar.classList.remove('open');
+                    const viewOffersBtn = document.querySelector('.view-offers-btn');
+                    if ((!menuSidebar.contains(event.target) && event.target !== viewMenuBtn && !viewMenuBtn.contains(event.target)) &&
+                        (!offersSidebar.contains(event.target) && event.target !== viewOffersBtn && !viewOffersBtn.contains(event.target))) {
+                        menuSidebar.classList.remove('open');
+                        offersSidebar.classList.remove('open');
                     }
                 });
             }
@@ -785,7 +856,6 @@
             document.getElementById('profile-dropdown').classList.toggle('show');
         }
         
-        // Close the dropdown if clicked outside
         window.onclick = function(event) {
             if (!event.target.matches('.profile-icon') && !event.target.closest('.profile-icon')) {
                 const dropdowns = document.getElementsByClassName('dropdown-content');
